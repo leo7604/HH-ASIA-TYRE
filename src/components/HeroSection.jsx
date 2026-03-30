@@ -45,7 +45,7 @@ const heroSlides = [
   },
   {
     id: 4,
-    image: 'https://images.unsplash.com/photo-1552857859-8462d3d17dec?w=1600&q=80',
+    image: 'https://images.unsplash.com/photo-1597762696664-2c8e71c46f5d?w=1600&q=80',
     eyebrow: 'Ilocos Norte',
     title: 'LAOAG BRANCH',
     subtitle: 'Northern Luzon\'s premier tire and auto service center',

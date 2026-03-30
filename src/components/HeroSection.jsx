@@ -6,7 +6,7 @@ import { locations } from '../data/mockData';
 const heroSlides = [
   {
     id: 1,
-    image: 'https://images.unsplash.com/photo-1625043484550-df60256f6ea5?w=1600&q=80',
+    image: '/images/alabang.jpg',
     eyebrow: 'Metro Manila',
     title: 'ALABANG BRANCH',
     subtitle: 'Your trusted tire and auto care experts in the south',
@@ -19,7 +19,7 @@ const heroSlides = [
   },
   {
     id: 2,
-    image: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=1600&q=80',
+    image: '/images/bicutan.jpg',
     eyebrow: 'Metro Manila',
     title: 'BICUTAN BRANCH',
     subtitle: 'Full-service auto care in Parañaque City',
@@ -32,7 +32,7 @@ const heroSlides = [
   },
   {
     id: 3,
-    image: 'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=1600&q=80',
+    image: '/images/bicutan.jpg',
     eyebrow: 'Cavite',
     title: 'BACOOR BRANCH',
     subtitle: 'Quality auto services in Cavite',
@@ -45,7 +45,7 @@ const heroSlides = [
   },
   {
     id: 4,
-    image: 'https://images.unsplash.com/photo-1597762696664-2c8e71c46f5d?w=1600&q=80',
+    image: '/images/laoag.jpg',
     eyebrow: 'Ilocos Norte',
     title: 'LAOAG BRANCH',
     subtitle: 'Northern Luzon\'s premier tire and auto service center',

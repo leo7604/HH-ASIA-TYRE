@@ -215,3 +215,4 @@ This is a prototype project for HH Asia Tyre Alliance Plus+.
 ---
 
 **Development**: Open http://localhost:5173 in your browser after running `npm run dev`.
+"# Force deploy"  

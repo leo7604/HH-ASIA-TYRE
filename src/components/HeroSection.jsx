@@ -32,7 +32,7 @@ const heroSlides = [
   },
   {
     id: 3,
-    image: '/images/bicutan.jpg',
+    image: '/images/bacoor.jpg',
     eyebrow: 'Cavite',
     title: 'BACOOR BRANCH',
     subtitle: 'Quality auto services in Cavite',

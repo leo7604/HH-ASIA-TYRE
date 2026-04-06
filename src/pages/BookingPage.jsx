@@ -14,13 +14,6 @@ function BookingPage() {
   const preselectedBranch = searchParams.get('branch');
   const preselectedStep = searchParams.get('step');
   
-  console.log('=== BOOKING PAGE DEBUG ===');
-  console.log('Full URL:', window.location.href);
-  console.log('Search params:', searchParams.toString());
-  console.log('preselectedBranch:', preselectedBranch);
-  console.log('preselectedStep:', preselectedStep);
-  console.log('=========================');
-  
   const [bookingData, setBookingData] = useState({
     // Step 1: Region & Branch
     selectedRegion: '',
@@ -66,17 +59,13 @@ function BookingPage() {
 
   // If branch is preselected from URL, start at step 2 (vehicle details)
   useEffect(() => {
-    console.log('BookingPage loaded with params:', { preselectedBranch, preselectedStep });
-    
     if (preselectedBranch) {
       // Convert string ID to number for comparison
       const branchId = parseInt(preselectedBranch, 10);
       const branch = locations.find(l => l.id === branchId);
-      console.log('Looking for branch ID:', branchId, 'Found branch:', branch);
       
       if (branch) {
         const region = branch.city === 'Ilocos Norte' ? 'laoag' : 'manila';
-        console.log('Setting region to:', region, 'and jumping to step 2');
         
         setBookingData(prev => ({ 
           ...prev, 
@@ -86,9 +75,6 @@ function BookingPage() {
         
         // Skip branch selection, go straight to vehicle details
         setCurrentStep(2);
-      } else {
-        console.log('Branch not found for ID:', branchId);
-        console.log('Available locations:', locations.map(l => l.id));
       }
     }
   }, [preselectedBranch]);
@@ -226,7 +212,7 @@ function BookingPage() {
         customerName: bookingData.fullName,
         phone: bookingData.phone,
         email: bookingData.email,
-        serviceType: bookingData.selectedServices.join(', '), // Convert array to string
+        serviceType: bookingData.selectedServices.join(', '),
         vehicleMake: bookingData.vehicleMake,
         vehicleModel: bookingData.vehicleModel,
         vehicleYear: bookingData.vehicleYear,
@@ -236,8 +222,6 @@ function BookingPage() {
         branch: branchCode,
         notes: bookingData.specialRequests || '',
       };
-      
-      console.log('Submitting booking to API:', apiPayload);
       
       // Call the production API
       const response = await fetch('https://hh-asia-tyre-crm-inv-sys.vercel.app/api/public/bookings', {
@@ -253,8 +237,6 @@ function BookingPage() {
       if (!response.ok) {
         throw new Error(result.error || 'Failed to submit booking');
       }
-      
-      console.log('Booking created successfully:', result);
       
       // Also save to localStorage for their admin dashboard
       const appointment = {

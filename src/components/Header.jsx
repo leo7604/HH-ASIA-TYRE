@@ -10,20 +10,33 @@ function Header() {
     <header className="bg-brand-black/88 backdrop-blur-md sticky top-0 z-50 border-b border-brand-border">
       <nav className="max-w-[1280px] mx-auto px-6 h-[68px] flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 cursor-pointer" onClick={() => setIsMenuOpen(false)}>
-          <div className="w-[38px] h-[38px] bg-brand-yellow rounded-lg flex items-center justify-center font-display font-black text-lg text-white shadow-[0_0_16px_rgba(255,215,0,0.3)]">
-            HH
+        <Link to="/" className="flex items-center gap-3 cursor-pointer group" onClick={() => setIsMenuOpen(false)}>
+          {/* Simplified Professional Logo */}
+          <div className="relative w-[42px] h-[42px] flex items-center justify-center">
+            {/* Outer ring */}
+            <div className="absolute inset-0 border-2 border-brand-yellow rounded-full group-hover:border-white transition-colors duration-300"></div>
+            {/* Inner circle */}
+            <div className="absolute inset-1 bg-brand-yellow rounded-full flex items-center justify-center group-hover:bg-white transition-colors duration-300">
+              <span className="font-display font-black text-brand-black text-lg">HH</span>
+            </div>
           </div>
-          <div className="font-display font-bold text-xl tracking-wide text-white">
-            Asia <span className="text-brand-yellow">Tyre</span>
+          
+          {/* Brand Text */}
+          <div className="flex flex-col leading-tight">
+            <span className="font-display font-bold text-xl tracking-wide text-white group-hover:text-brand-yellow transition-colors duration-300">
+              HH ASIA
+            </span>
+            <span className="font-display font-semibold text-xs tracking-[0.2em] uppercase text-brand-textMuted group-hover:text-white transition-colors duration-300">
+              Tyre Alliance
+            </span>
           </div>
         </Link>
 
         {/* Desktop Navigation */}
         <div className="hidden lg:flex items-center gap-1">
-          <a 
+          <div 
             href="#services" 
-            className="px-4 py-2 text-brand-textMuted hover:text-white text-sm font-medium transition-colors rounded-md hover:bg-brand-raised relative group"
+            className="px-4 py-2 text-brand-textMuted hover:text-white text-sm font-medium transition-colors rounded-md hover:bg-brand-raised relative group cursor-pointer"
             onMouseEnter={() => setActiveDropdown('services')}
             onMouseLeave={() => setActiveDropdown(null)}
           >
@@ -58,11 +71,10 @@ function Header() {
                 View All Services
               </a>
             </div>
-          </a>
+          </div>
 
-          <a 
-            href="#locations" 
-            className="px-4 py-2 text-brand-textMuted hover:text-white text-sm font-medium transition-colors rounded-md hover:bg-brand-raised relative group"
+          <div 
+            className="px-4 py-2 text-brand-textMuted hover:text-white text-sm font-medium transition-colors rounded-md hover:bg-brand-raised relative group cursor-pointer"
             onMouseEnter={() => setActiveDropdown('locations')}
             onMouseLeave={() => setActiveDropdown(null)}
           >
@@ -103,7 +115,7 @@ function Header() {
                 View All Branches
               </a>
             </div>
-          </a>
+          </div>
 
           <a href="#gallery" className="px-4 py-2 text-brand-textMuted hover:text-white text-sm font-medium transition-colors rounded-md hover:bg-brand-raised">
             Gallery

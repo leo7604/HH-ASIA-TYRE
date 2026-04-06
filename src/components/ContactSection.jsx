@@ -182,6 +182,37 @@ function ContactSection() {
                 1-800-HH-ASIA
               </a>
             </div>
+
+            {/* Map Card */}
+            <div className="bg-brand-card border border-brand-border rounded-xl overflow-hidden">
+              <div className="p-4 border-b border-brand-border">
+                <h4 className="font-display font-bold text-white">Our Locations</h4>
+              </div>
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3863.1234567890123!2d121.12345678901234!3d14.123456789012345!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTTCsDA3JzI0LjQiTiAxMjHCsDA3JzI0LjQiRQ!5e0!3m2!1sen!2sph!4v1234567890123!5m2!1sen!2sph"
+                width="100%"
+                height="250"
+                style={{ border: 0 }}
+                allowFullScreen=""
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="w-full"
+                title="HH Asia Tyre Locations"
+              />
+              <div className="p-4">
+                <a
+                  href="https://maps.google.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-brand-yellow text-sm font-semibold hover:underline"
+                >
+                  View on Google Maps
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>

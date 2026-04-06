@@ -38,7 +38,9 @@ export const services = [
     icon: "tyre",
     description: "Premium tyre sales, installation, rotation, and repair services",
     link: "/services/tires",
-    category: "tires"
+    category: "tires",
+    duration: "1-2 hours",
+    priceRange: "₱2,500 - ₱8,000"
   },
   {
     id: 2,
@@ -46,7 +48,9 @@ export const services = [
     icon: "oil",
     description: "Full synthetic, blend, and conventional oil change services",
     link: "/services/oil-change",
-    category: "maintenance"
+    category: "maintenance",
+    duration: "30-45 min",
+    priceRange: "₱800 - ₱2,500"
   },
   {
     id: 3,
@@ -54,7 +58,9 @@ export const services = [
     icon: "battery",
     description: "Battery testing, replacement, and charging system diagnostics",
     link: "/services/batteries",
-    category: "maintenance"
+    category: "maintenance",
+    duration: "30-60 min",
+    priceRange: "₱3,500 - ₱8,000"
   },
   {
     id: 4,
@@ -62,7 +68,9 @@ export const services = [
     icon: "brakes",
     description: "Brake inspection, pad replacement, rotor service, and fluid flush",
     link: "/services/brakes",
-    category: "auto-repair"
+    category: "auto-repair",
+    duration: "1-3 hours",
+    priceRange: "₱2,000 - ₱6,000"
   },
   {
     id: 5,
@@ -70,7 +78,9 @@ export const services = [
     icon: "clutch",
     description: "Clutch inspection, adjustment, and complete replacement services",
     link: "/services/clutch",
-    category: "auto-repair"
+    category: "auto-repair",
+    duration: "3-5 hours",
+    priceRange: "₱8,000 - ₱15,000"
   },
   {
     id: 6,
@@ -78,7 +88,9 @@ export const services = [
     icon: "maintenance",
     description: "Scheduled maintenance, tune-ups, and preventive care",
     link: "/services/maintenance",
-    category: "maintenance"
+    category: "maintenance",
+    duration: "1-2 hours",
+    priceRange: "₱1,500 - ₱5,000"
   },
   {
     id: 7,
@@ -86,7 +98,9 @@ export const services = [
     icon: "aircon",
     description: "AC inspection, refrigerant recharge, and repair services",
     link: "/services/aircon",
-    category: "auto-repair"
+    category: "auto-repair",
+    duration: "1-2 hours",
+    priceRange: "₱1,500 - ₱4,500"
   },
   {
     id: 8,
@@ -94,7 +108,9 @@ export const services = [
     icon: "suspension",
     description: "Shock, strut, and suspension system inspection and repair",
     link: "/services/suspension",
-    category: "auto-repair"
+    category: "auto-repair",
+    duration: "2-4 hours",
+    priceRange: "₱3,000 - ₱12,000"
   },
   {
     id: 9,
@@ -102,7 +118,9 @@ export const services = [
     icon: "transmission",
     description: "Transmission fluid service, diagnostics, and repair",
     link: "/services/transmission",
-    category: "auto-repair"
+    category: "auto-repair",
+    duration: "2-4 hours",
+    priceRange: "₱2,500 - ₱10,000"
   }
 ];
 
@@ -163,7 +181,9 @@ export const locations = [
     hours: "Mon-Sat: 8AM-6PM",
     services: ["Tires", "Oil Change", "Batteries", "Brakes", "Maintenance"],
     mapUrl: "https://www.google.com/maps/dir/?api=1&destination=Alabang-Zapote+Rd+Las+Piñas+City+Metro+Manila",
-    image: "https://images.unsplash.com/photo-1625043484550-df60256f6ea5?w=1200&h=600&fit=crop&q=80"
+    image: "https://images.unsplash.com/photo-1625043484550-df60256f6ea5?w=1200&h=600&fit=crop&q=80",
+    rating: 4.8,
+    reviewCount: 342
   },
   {
     id: 2,
@@ -177,7 +197,9 @@ export const locations = [
     hours: "Mon-Sat: 8AM-6PM",
     services: ["Tires", "Oil Change", "Batteries"],
     mapUrl: "https://www.google.com/maps/dir/?api=1&destination=118+Doña+Soledad+Avenue+Don+Bosco+Parañaque+City",
-    image: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=1200&h=600&fit=crop&q=80"
+    image: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=1200&h=600&fit=crop&q=80",
+    rating: 4.6,
+    reviewCount: 218
   },
   {
     id: 3,
@@ -191,7 +213,9 @@ export const locations = [
     hours: "Mon-Sat: 8AM-6PM",
     services: ["Tires", "Oil Change", "Brakes", "Maintenance"],
     mapUrl: "https://www.google.com/maps/dir/?api=1&destination=Aguinaldo+Highway+Nlog+II+4102+Bacoor+Cavite",
-    image: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=1200&h=600&fit=crop&q=80"
+    image: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=1200&h=600&fit=crop&q=80",
+    rating: 4.7,
+    reviewCount: 289
   },
   {
     id: 4,
@@ -205,7 +229,9 @@ export const locations = [
     hours: "Mon-Sat: 8AM-6PM",
     services: ["Tires", "Batteries", "Brakes"],
     mapUrl: "https://www.google.com/maps/dir/?api=1&destination=8277+Dr+A+Santos+Avenue+San+Isidro+Parañaque",
-    image: "https://images.unsplash.com/photo-1552857859-8462d3d17dec?w=1200&h=600&fit=crop&q=80"
+    image: "https://images.unsplash.com/photo-1552857859-8462d3d17dec?w=1200&h=600&fit=crop&q=80",
+    rating: 4.5,
+    reviewCount: 195
   },
   {
     id: 5,
@@ -219,7 +245,9 @@ export const locations = [
     hours: "Mon-Sat: 8AM-6PM",
     services: ["Tires", "Oil Change", "Batteries", "Brakes", "Maintenance"],
     mapUrl: "https://www.google.com/maps/dir/?api=1&destination=8277+Dr+A+Santos+Avenue+San+Isidro+Parañaque",
-    image: "https://images.unsplash.com/photo-1597762696664-2c8e71c46f5d?w=1200&h=600&fit=crop&q=80"
+    image: "https://images.unsplash.com/photo-1597762696664-2c8e71c46f5d?w=1200&h=600&fit=crop&q=80",
+    rating: 4.6,
+    reviewCount: 167
   },
   {
     id: 6,
@@ -233,7 +261,9 @@ export const locations = [
     hours: "Mon-Sat: 8AM-5PM",
     services: ["Tires", "Oil Change", "Batteries", "Brakes", "Maintenance", "Suspension"],
     mapUrl: "https://www.google.com/maps/dir/?api=1&destination=18.206733865804356,120.60029019113064",
-    image: "https://images.unsplash.com/photo-1530906358829-e84b2769270f?w=1200&h=600&fit=crop&q=80"
+    image: "https://images.unsplash.com/photo-1530906358829-e84b2769270f?w=1200&h=600&fit=crop&q=80",
+    rating: 4.9,
+    reviewCount: 412
   }
 ];
 
@@ -291,122 +321,42 @@ export const testimonials = [
 ];
 
 export const galleryImages = [
-  // Facility Photos
+  // Your Actual Service Photos
   {
     id: 1,
-    src: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=600&h=400&fit=crop&q=80",
-    alt: "Modern Service Bay",
-    category: "Facility"
+    src: '/images/tire_change.jpg',
+    alt: 'Professional Tire Change Service',
+    category: 'Service'
   },
   {
     id: 2,
-    src: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=600&h=400&fit=crop&q=80",
-    alt: "Clean Workshop Area",
-    category: "Facility"
+    src: '/images/battery_replacement.jpg',
+    alt: 'Battery Replacement Service',
+    category: 'Service'
   },
   {
     id: 3,
-    src: "https://images.unsplash.com/photo-1562916172-27f18dc39f6c?w=600&h=400&fit=crop&q=80",
-    alt: "Customer Waiting Area",
-    category: "Facility"
+    src: '/images/brake_inspection.jpg',
+    alt: 'Comprehensive Brake Inspection',
+    category: 'Service'
   },
   {
     id: 4,
-    src: "https://images.unsplash.com/photo-1552857859-8462d3d17dec?w=600&h=400&fit=crop&q=80",
-    alt: "Professional Equipment",
-    category: "Facility"
+    src: '/images/oil_maintenance.jpg',
+    alt: 'Oil Change Maintenance',
+    category: 'Service'
   },
-  
-  // Service Photos
   {
     id: 5,
-    src: "https://images.unsplash.com/photo-1578844251758-2f71da645217?w=600&h=400&fit=crop&q=80",
-    alt: "Tyre Installation Service",
-    category: "Service"
+    src: '/images/car_maintenance.jpg',
+    alt: 'Complete Car Maintenance',
+    category: 'Service'
   },
   {
     id: 6,
-    src: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&h=400&fit=crop&q=80",
-    alt: "Oil Change Service",
-    category: "Service"
-  },
-  {
-    id: 7,
-    src: "https://images.unsplash.com/photo-1552857859-8462d3d17dec?w=600&h=400&fit=crop&q=80",
-    alt: "Brake Inspection",
-    category: "Service"
-  },
-  {
-    id: 8,
-    src: "https://images.unsplash.com/photo-1504222490245-4c67adbe8729?w=600&h=400&fit=crop&q=80",
-    alt: "Battery Replacement",
-    category: "Service"
-  },
-  {
-    id: 9,
-    src: "https://images.unsplash.com/photo-1597762696664-2c8e71c46f5d?w=600&h=400&fit=crop&q=80",
-    alt: "Wheel Alignment",
-    category: "Service"
-  },
-  {
-    id: 10,
-    src: "https://images.unsplash.com/photo-1530906358829-e84b2769270f?w=600&h=400&fit=crop&q=80",
-    alt: "Suspension Repair",
-    category: "Service"
-  },
-  
-  // Team Photos
-  {
-    id: 11,
-    src: "https://images.unsplash.com/photo-1556761175-4b46a572b786?w=600&h=400&fit=crop&q=80",
-    alt: "Certified Technicians",
-    category: "Team"
-  },
-  {
-    id: 12,
-    src: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&h=400&fit=crop&q=80",
-    alt: "Expert Mechanics at Work",
-    category: "Team"
-  },
-  {
-    id: 13,
-    src: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=600&h=400&fit=crop&q=80",
-    alt: "Friendly Service Staff",
-    category: "Team"
-  },
-  
-  // Products & Brands
-  {
-    id: 14,
-    src: "https://images.unsplash.com/photo-1578844251758-2f71da645217?w=600&h=400&fit=crop&q=80",
-    alt: "Premium Tyre Brands",
-    category: "Products"
-  },
-  {
-    id: 15,
-    src: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&h=400&fit=crop&q=80",
-    alt: "Quality Motor Oil",
-    category: "Products"
-  },
-  {
-    id: 16,
-    src: "https://images.unsplash.com/photo-1597762696664-2c8e71c46f5d?w=600&h=400&fit=crop&q=80",
-    alt: "Car Parts & Accessories",
-    category: "Products"
-  },
-  
-  // Before/After
-  {
-    id: 17,
-    src: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=600&h=400&fit=crop&q=80",
-    alt: "Tyre Replacement Before After",
-    category: "Before/After"
-  },
-  {
-    id: 18,
-    src: "https://images.unsplash.com/photo-1504222490245-4c67adbe8729?w=600&h=400&fit=crop&q=80",
-    alt: "Engine Service Results",
-    category: "Before/After"
+    src: '/images/transmission_change.jpg',
+    alt: 'Transmission Service',
+    category: 'Service'
   }
 ];
 

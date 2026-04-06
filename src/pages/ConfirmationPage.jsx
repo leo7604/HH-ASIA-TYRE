@@ -2,10 +2,10 @@ import { useLocation, Link } from 'react-router-dom';
 
 function ConfirmationPage() {
   const location = useLocation();
-  const { bookingData } = location.state || {};
+  const { bookingData, apiResponse } = location.state || {};
 
-  // Generate a random confirmation number
-  const confirmationNumber = `HH${Date.now().toString().slice(-8)}`;
+  // Use confirmation number from API response, or generate fallback
+  const confirmationNumber = apiResponse?.data?.confirmationNumber || `HH${Date.now().toString().slice(-8)}`;
   const bookingDate = new Date().toLocaleDateString('en-PH', {
     year: 'numeric',
     month: 'long',

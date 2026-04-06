@@ -1,10 +1,16 @@
 import { useState, useEffect } from 'react';
 
-function PWAInstallPrompt() {
+function PWAInstallPrompt({ forceShow = false }) {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showPrompt, setShowPrompt] = useState(false);
 
   useEffect(() => {
+    // Force show for testing
+    if (forceShow) {
+      setShowPrompt(true);
+      return;
+    }
+
     // Check if user has already dismissed the prompt
     const hasDismissed = localStorage.getItem('pwa-prompt-dismissed');
     if (hasDismissed) return;

@@ -1,26 +1,47 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { locations, vehicleMakes, timeSlots, services } from '../data/mockData';
+import Breadcrumbs from '../components/Breadcrumbs';
 
 function BookingPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  
+  // Pre-select branch from URL if provided
+  const preselectedBranch = searchParams.get('branch');
+  const preselectedStep = searchParams.get('step');
+  
+  console.log('=== BOOKING PAGE DEBUG ===');
+  console.log('Full URL:', window.location.href);
+  console.log('Search params:', searchParams.toString());
+  console.log('preselectedBranch:', preselectedBranch);
+  console.log('preselectedStep:', preselectedStep);
+  console.log('=========================');
+  
   const [bookingData, setBookingData] = useState({
-    // Step 1: Vehicle
+    // Step 1: Region & Branch
+    selectedRegion: '',
+    selectedLocation: preselectedBranch || '',
+
+    // Step 2: Vehicle
     vehicleYear: '',
     vehicleMake: '',
     vehicleModel: '',
     vehicleTrim: '',
-    
-    // Step 2: Services
+    plateNumber: '',
+
+    // Step 3: Services
     selectedServices: [],
-    
-    // Step 3: Location & Time
-    selectedLocation: '',
+    otherServices: '',
+
+    // Step 4: Date & Time
     selectedDate: '',
     selectedTime: '',
-    
-    // Step 4: Customer Details
+
+    // Step 5: Customer Details
     fullName: '',
     email: '',
     phone: '',
@@ -28,407 +49,1135 @@ function BookingPage() {
     specialRequests: '',
   });
 
+  const [formErrors, setFormErrors] = useState({});
+
+  // Filter branches by region
+  const manilaBranches = locations.filter(l => l.city === 'Metro Manila' || l.city === 'Cavite');
+  const laoagBranches = locations.filter(l => l.city === 'Ilocos Norte');
+  
+  const displayedBranches = bookingData.selectedRegion === 'manila' 
+    ? manilaBranches 
+    : bookingData.selectedRegion === 'laoag' 
+      ? laoagBranches 
+      : [];
+
+  // Get selected branch details
+  const selectedBranchDetails = locations.find(l => l.id === bookingData.selectedLocation);
+
+  // If branch is preselected from URL, start at step 2 (vehicle details)
+  useEffect(() => {
+    console.log('BookingPage loaded with params:', { preselectedBranch, preselectedStep });
+    
+    if (preselectedBranch) {
+      // Convert string ID to number for comparison
+      const branchId = parseInt(preselectedBranch, 10);
+      const branch = locations.find(l => l.id === branchId);
+      console.log('Looking for branch ID:', branchId, 'Found branch:', branch);
+      
+      if (branch) {
+        const region = branch.city === 'Ilocos Norte' ? 'laoag' : 'manila';
+        console.log('Setting region to:', region, 'and jumping to step 2');
+        
+        setBookingData(prev => ({ 
+          ...prev, 
+          selectedRegion: region,
+          selectedLocation: preselectedBranch 
+        }));
+        
+        // Skip branch selection, go straight to vehicle details
+        setCurrentStep(2);
+      } else {
+        console.log('Branch not found for ID:', branchId);
+        console.log('Available locations:', locations.map(l => l.id));
+      }
+    }
+  }, [preselectedBranch]);
+
   const updateBooking = (field, value) => {
     setBookingData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (formErrors[field]) {
+      setFormErrors(prev => ({ ...prev, [field]: null }));
+    }
   };
 
-  const nextStep = () => setCurrentStep(prev => prev + 1);
-  const prevStep = () => setCurrentStep(prev => prev - 1);
+  const nextStep = () => {
+    if (validateCurrentStep()) {
+      setCurrentStep(prev => prev + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+  
+  const prevStep = () => {
+    setCurrentStep(prev => prev - 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-  const handleSubmit = () => {
-    // In a real app, this would submit to an API
-    console.log('Booking submitted:', bookingData);
-    navigate('/confirmation', { state: { bookingData } });
+  const validateCurrentStep = () => {
+    const errors = {};
+    let isValid = true;
+
+    switch (currentStep) {
+      case 1:
+        if (!bookingData.selectedRegion) {
+          errors.selectedRegion = 'Please select a region';
+          isValid = false;
+        }
+        if (!bookingData.selectedLocation) {
+          errors.selectedLocation = 'Please select a branch';
+          isValid = false;
+        }
+        break;
+      case 2:
+        if (!bookingData.vehicleYear) {
+          errors.vehicleYear = 'Required';
+          isValid = false;
+        }
+        if (!bookingData.vehicleMake) {
+          errors.vehicleMake = 'Required';
+          isValid = false;
+        }
+        if (!bookingData.vehicleModel) {
+          errors.vehicleModel = 'Required';
+          isValid = false;
+        }
+        if (!bookingData.plateNumber) {
+          errors.plateNumber = 'Required';
+          isValid = false;
+        }
+        break;
+      case 3:
+        if (bookingData.selectedServices.length === 0) {
+          errors.selectedServices = 'Please select at least one service';
+          isValid = false;
+        }
+        break;
+      case 4:
+        if (!bookingData.selectedDate) {
+          errors.selectedDate = 'Required';
+          isValid = false;
+        }
+        if (!bookingData.selectedTime) {
+          errors.selectedTime = 'Required';
+          isValid = false;
+        }
+        break;
+      case 5:
+        if (!bookingData.fullName.trim()) {
+          errors.fullName = 'Required';
+          isValid = false;
+        }
+        if (!bookingData.phone.trim()) {
+          errors.phone = 'Required';
+          isValid = false;
+        } else if (!/^(\+63|0)?9\d{9}$/.test(bookingData.phone.replace(/\s/g, ''))) {
+          errors.phone = 'Invalid Philippine mobile number';
+          isValid = false;
+        }
+        if (!bookingData.email.trim()) {
+          errors.email = 'Required';
+          isValid = false;
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.email)) {
+          errors.email = 'Invalid email format';
+          isValid = false;
+        }
+        break;
+    }
+
+    setFormErrors(errors);
+    return isValid;
+  };
+
+  // Branch ID to code mapping for API
+  const branchCodeMap = {
+    1: 'MNL', // Goodyear High Performance Center - Alabang
+    2: 'MNL', // Goodyear Autocare Bicutan
+    3: 'MNL', // Goodyear Autocare Bacoor
+    4: 'MNL', // Goodyear Autocare Sucat
+    5: 'MNL', // Tire Asia - GT Radial Sucat
+    6: 'LAO', // Laoag branch (if added)
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    
+    try {
+      // Validate date is not in the past or invalid year
+      const selectedDate = new Date(bookingData.selectedDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (selectedDate < today) {
+        throw new Error('Please select a future date');
+      }
+      
+      if (selectedDate.getFullYear() < 2024 || selectedDate.getFullYear() > 2030) {
+        throw new Error('Please select a valid date');
+      }
+      
+      // Map branch ID to code
+      const branchCode = branchCodeMap[bookingData.selectedLocation] || 'MNL';
+      
+      // Format date as YYYY-MM-DD for API
+      const formattedDate = selectedDate.toISOString().split('T')[0];
+      
+      // Prepare API payload
+      const apiPayload = {
+        customerName: bookingData.fullName,
+        phone: bookingData.phone,
+        email: bookingData.email,
+        serviceType: bookingData.selectedServices.join(', '), // Convert array to string
+        vehicleMake: bookingData.vehicleMake,
+        vehicleModel: bookingData.vehicleModel,
+        vehicleYear: bookingData.vehicleYear,
+        plateNumber: bookingData.plateNumber,
+        preferredDate: formattedDate,
+        preferredTime: bookingData.selectedTime,
+        branch: branchCode,
+        notes: bookingData.specialRequests || '',
+      };
+      
+      console.log('Submitting booking to API:', apiPayload);
+      
+      // Call the production API
+      const response = await fetch('https://hh-asia-tyre-crm-inv-sys.vercel.app/api/public/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(apiPayload),
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to submit booking');
+      }
+      
+      console.log('Booking created successfully:', result);
+      
+      // Also save to localStorage for their admin dashboard
+      const appointment = {
+        id: result.data?.id || Date.now(),
+        branchId: parseInt(bookingData.selectedLocation),
+        customerName: bookingData.fullName,
+        email: bookingData.email,
+        phone: bookingData.phone,
+        vehicleYear: bookingData.vehicleYear,
+        vehicleMake: bookingData.vehicleMake,
+        vehicleModel: bookingData.vehicleModel,
+        vehicleTrim: bookingData.vehicleTrim,
+        plateNumber: bookingData.plateNumber,
+        services: bookingData.selectedServices,
+        otherServices: bookingData.otherServices || null,
+        date: bookingData.selectedDate,
+        time: bookingData.selectedTime,
+        mileage: bookingData.mileage ? parseInt(bookingData.mileage) : null,
+        notes: bookingData.specialRequests,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        apiBookingId: result.data?.id,
+      };
+      
+      const existingAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+      existingAppointments.push(appointment);
+      localStorage.setItem('appointments', JSON.stringify(existingAppointments));
+      
+      setShowSuccess(true);
+      setTimeout(() => {
+        navigate('/confirmation', { state: { bookingData, apiResponse: result } });
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Booking submission failed:', error);
+      alert('Failed to submit booking: ' + error.message);
+      setIsSubmitting(false);
+    }
   };
 
   const isStepValid = () => {
     switch (currentStep) {
       case 1:
-        return bookingData.vehicleYear && bookingData.vehicleMake && bookingData.vehicleModel;
+        return bookingData.selectedRegion && bookingData.selectedLocation;
       case 2:
-        return bookingData.selectedServices.length > 0;
+        return bookingData.vehicleYear && bookingData.vehicleMake && bookingData.vehicleModel && bookingData.plateNumber;
       case 3:
-        return bookingData.selectedLocation && bookingData.selectedDate && bookingData.selectedTime;
+        return bookingData.selectedServices.length > 0;
       case 4:
-        return bookingData.fullName && bookingData.email && bookingData.phone;
+        return bookingData.selectedDate && bookingData.selectedTime;
       case 5:
+        return bookingData.fullName && bookingData.email && bookingData.phone;
+      case 6:
         return true;
       default:
         return false;
     }
   };
 
+  const getStepSummary = () => {
+    const summaries = [];
+    
+    if (bookingData.selectedLocation) {
+      const branch = locations.find(l => l.id === bookingData.selectedLocation);
+      summaries.push(branch ? branch.name : 'Branch selected');
+    }
+    
+    if (bookingData.vehicleYear && bookingData.vehicleMake && bookingData.vehicleModel) {
+      summaries.push(`${bookingData.vehicleYear} ${bookingData.vehicleMake} ${bookingData.vehicleModel}`);
+    }
+    
+    if (bookingData.selectedServices.length > 0) {
+      summaries.push(`${bookingData.selectedServices.length} service(s)`);
+    }
+    
+    if (bookingData.selectedDate && bookingData.selectedTime) {
+      const dateObj = new Date(bookingData.selectedDate);
+      const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      summaries.push(`${dateStr} at ${bookingData.selectedTime}`);
+    }
+    
+    if (bookingData.fullName) {
+      summaries.push(bookingData.fullName);
+    }
+    
+    return summaries;
+  };
+
+  const stepSummary = getStepSummary();
+
+  // Get selected branch info
+  const selectedBranch = bookingData.selectedLocation 
+    ? locations.find(l => l.id === parseInt(bookingData.selectedLocation))
+    : null;
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Progress Bar */}
-      <div className="bg-brand-black py-4" style={{ backgroundColor: '#000000' }}>
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between max-w-3xl mx-auto">
-            {['Vehicle', 'Services', 'Location & Time', 'Your Details', 'Confirm'].map((step, index) => (
-              <div key={step} className="flex items-center">
+    <div className="min-h-screen bg-gradient-to-b from-brand-black to-brand-card">
+      {/* Branch Info Banner - Shows selected branch */}
+      {selectedBranch && (
+        <div className="bg-brand-yellow text-black py-3 px-6 border-b-2 border-yellow-400">
+          <div className="max-w-[1200px] mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+              </svg>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider opacity-75">Selected Branch</p>
+                <p className="font-display font-bold text-sm">{selectedBranch.name}</p>
+              </div>
+            </div>
+            <div className="text-right hidden sm:block">
+              <p className="text-xs opacity-75">{selectedBranch.address}</p>
+              <p className="text-xs font-semibold">📞 {selectedBranch.phone}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Top Navigation Bar */}
+      <nav className="bg-brand-black border-b border-brand-border sticky top-0 z-50" style={{ backgroundColor: '#000000' }}>
+        <div className="max-w-[1200px] mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            {/* Back Button - Left */}
+            <button
+              onClick={() => navigate('/')}
+              className="inline-flex items-center gap-2 bg-brand-raised border border-brand-yellow/40 hover:border-brand-yellow px-4 py-2 rounded-lg transition-all group hover:bg-brand-yellow/10 hover:shadow-[0_0_20px_rgba(255,215,0,0.3)]"
+            >
+              <svg className="w-5 h-5 text-brand-yellow transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+              <span className="font-display font-bold uppercase tracking-wider text-white text-sm">BACK</span>
+            </button>
+
+            {/* Page Title - Center */}
+            <div className="absolute left-1/2 -translate-x-1/2">
+              <h1 className="font-display font-bold uppercase text-white text-lg hidden md:block">
+                Book Your Service
+              </h1>
+            </div>
+
+            {/* Right Side - Empty for balance or future actions */}
+            <div className="w-24"></div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Breadcrumb Navigation */}
+      <Breadcrumbs />
+
+      {/* Enhanced Progress Bar with Summary */}
+      <div className="bg-brand-black py-4 border-b border-brand-border sticky top-16 z-40" style={{ backgroundColor: '#000000' }}>
+        <div className="max-w-[1200px] mx-auto px-4">
+          {/* Step Indicators */}
+          <div className="flex items-center gap-1 overflow-x-auto mb-3">
+            {[
+              { num: 1, label: 'Branch', icon: '📍' },
+              { num: 2, label: 'Vehicle', icon: '🚗' },
+              { num: 3, label: 'Services', icon: '🔧' },
+              { num: 4, label: 'Date/Time', icon: '📅' },
+              { num: 5, label: 'Your Info', icon: '👤' },
+              { num: 6, label: 'Confirm', icon: '✓' }
+            ].map((step, index) => (
+              <div key={step.label} className="flex items-center flex-shrink-0">
                 <div className="flex items-center">
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
+                    className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
                       index + 1 <= currentStep
-                        ? 'bg-brand-yellow text-brand-black'
-                        : 'bg-gray-600 text-gray-400'
+                        ? 'bg-brand-yellow text-black shadow-[0_0_20px_rgba(255,215,0,0.4)] scale-110'
+                        : 'bg-gray-700 text-gray-500'
                     }`}
                   >
-                    {index + 1 < currentStep ? '✓' : index + 1}
+                    {index + 1 < currentStep ? '✓' : step.icon}
                   </div>
                   <span
-                    className={`ml-2 text-sm hidden sm:block ${
+                    className={`ml-2 text-xs hidden md:block font-medium ${
                       index + 1 <= currentStep ? 'text-white' : 'text-gray-500'
                     }`}
                   >
-                    {step}
+                    {step.label}
                   </span>
                 </div>
-                {index < 4 && (
+                {index < 5 && (
                   <div
-                    className={`w-12 sm:w-20 h-0.5 mx-2 ${
-                      index + 1 < currentStep ? 'bg-brand-yellow' : 'bg-gray-600'
+                    className={`w-6 md:w-10 h-0.5 mx-1 ${
+                      index + 1 < currentStep ? 'bg-brand-yellow' : 'bg-gray-700'
                     }`}
                   />
                 )}
               </div>
             ))}
           </div>
+          
+          {/* Step Summary Pills */}
+          {stepSummary.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-brand-border/30">
+              {stepSummary.map((summary, idx) => (
+                <div
+                  key={idx}
+                  className="inline-flex items-center gap-1.5 bg-brand-raised border border-brand-border/50 rounded-full px-3 py-1 text-xs text-brand-textMuted"
+                >
+                  <div className="w-1.5 h-1.5 bg-brand-yellow rounded-full"></div>
+                  {summary}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Form Content */}
-      <div className="container mx-auto px-4 py-8 max-w-3xl">
-        <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
-          {/* Step 1: Vehicle Selection */}
+      {/* Booking Content */}
+      <div className="max-w-[900px] mx-auto px-4 py-8">
+        <div className="bg-brand-card border border-brand-border rounded-xl p-6 md:p-8">
+          
+          {/* STEP 1: Region & Branch Selection */}
           {currentStep === 1 && (
-            <div className="animate-fade-in">
-              <h2 className="text-2xl font-bold text-brand-black mb-6">Select Your Vehicle</h2>
+            <div className="animate-fade-up">
+              <h2 className="text-2xl font-display font-bold uppercase text-white mb-2">Select Branch</h2>
+              <p className="text-brand-textMuted text-sm mb-6">Choose your region, then select a service location.</p>
               
+              {/* Error Display */}
+              {(formErrors.selectedRegion || formErrors.selectedLocation) && (
+                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg flex items-start gap-3">
+                  <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-red-400 text-sm">Please complete all required fields</span>
+                </div>
+              )}
+              
+              {/* Region Selection */}
               <div className="grid md:grid-cols-2 gap-4 mb-6">
+                <button
+                  onClick={() => {
+                    updateBooking('selectedRegion', 'manila');
+                    updateBooking('selectedLocation', '');
+                  }}
+                  className={`p-6 rounded-xl border-2 transition-all ${
+                    bookingData.selectedRegion === 'manila'
+                      ? 'border-brand-yellow bg-brand-yellow/10 shadow-[0_0_24px_rgba(255,215,0,0.2)]'
+                      : formErrors.selectedRegion
+                        ? 'border-red-500/50 bg-red-500/5'
+                        : 'border-brand-border bg-brand-raised hover:border-brand-yellow/40'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-display font-bold uppercase text-white text-lg">
+                      Metro Manila
+                    </h3>
+                    <span className="text-brand-yellow text-xs font-bold uppercase">3 Branches</span>
+                  </div>
+                  <p className="text-brand-textMuted text-sm">Cavite & Metro Manila area</p>
+                </button>
+                <button
+                  onClick={() => {
+                    updateBooking('selectedRegion', 'laoag');
+                    updateBooking('selectedLocation', '');
+                  }}
+                  className={`p-6 rounded-xl border-2 transition-all ${
+                    bookingData.selectedRegion === 'laoag'
+                      ? 'border-brand-yellow bg-brand-yellow/10 shadow-[0_0_24px_rgba(255,215,0,0.2)]'
+                      : formErrors.selectedRegion
+                        ? 'border-red-500/50 bg-red-500/5'
+                        : 'border-brand-border bg-brand-raised hover:border-brand-yellow/40'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-display font-bold uppercase text-white text-lg">
+                      Ilocos Norte
+                    </h3>
+                    <span className="text-brand-yellow text-xs font-bold uppercase">2 Branches</span>
+                  </div>
+                  <p className="text-brand-textMuted text-sm">Laoag area</p>
+                </button>
+              </div>
+
+              {/* Branch Selection (shown after region is selected) */}
+              {bookingData.selectedRegion && (
+                <div className="animate-fade-up">
+                  <div className="text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-4">
+                    Select Branch in {bookingData.selectedRegion === 'manila' ? 'Metro Manila & Cavite' : 'Ilocos Norte'}
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {displayedBranches.map((location) => (
+                      <div
+                        key={location.id}
+                        onClick={() => location.status === 'open' && updateBooking('selectedLocation', location.id)}
+                        className={`p-5 rounded-xl border-2 cursor-pointer transition-all ${
+                          bookingData.selectedLocation === location.id
+                            ? 'border-brand-yellow bg-brand-yellow/10 shadow-[0_0_24px_rgba(255,215,0,0.2)]'
+                            : formErrors.selectedLocation
+                              ? 'border-red-500/50 bg-red-500/5'
+                              : 'border-brand-border bg-brand-raised hover:border-brand-yellow/40'
+                        } ${location.status !== 'open' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <h3 className="font-display font-bold uppercase text-white">
+                            {location.name}
+                          </h3>
+                          {location.status === 'open' ? (
+                            <span className="text-green-400 text-xs font-bold uppercase">Open</span>
+                          ) : (
+                            <span className="text-gray-500 text-xs font-bold uppercase">Coming Soon</span>
+                          )}
+                        </div>
+                        <p className="text-brand-textMuted text-xs mb-2">{location.area}, {location.city}</p>
+                        <p className="text-brand-textDim text-xs">{location.hours}</p>
+                        
+                        {/* Services Tags */}
+                        <div className="flex flex-wrap gap-1 mt-3">
+                          {location.services.slice(0, 3).map((service, idx) => (
+                            <span
+                              key={idx}
+                              className="text-[0.6rem] px-2 py-0.5 rounded bg-brand-yellow/10 border border-brand-yellow/30 text-brand-yellow"
+                            >
+                              {service}
+                            </span>
+                          ))}
+                          {location.services.length > 3 && (
+                            <span className="text-[0.6rem] px-2 py-0.5 text-brand-textMuted">
+                              +{location.services.length - 3}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {formErrors.selectedLocation && (
+                    <p className="mt-2 text-red-400 text-sm flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {formErrors.selectedLocation}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className="flex justify-end mt-6">
+                <button
+                  onClick={nextStep}
+                  disabled={!isStepValid()}
+                  className={`px-8 py-3 rounded-md font-display font-bold uppercase tracking-wider transition-all ${
+                    isStepValid()
+                      ? 'bg-brand-yellow text-black hover:bg-yellow-400 shadow-[0_0_24px_rgba(255,215,0,0.3)] hover:-translate-y-0.5'
+                      : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  Next: Vehicle Details →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: Vehicle Details */}
+          {currentStep === 2 && (
+            <div className="animate-fade-up">
+              <h2 className="text-2xl font-display font-bold uppercase text-white mb-2">Vehicle Details</h2>
+              <p className="text-brand-textMuted text-sm mb-6">Tell us about your vehicle so we can prepare the right equipment.</p>
+              
+              {/* Error Summary */}
+              {(formErrors.vehicleYear || formErrors.vehicleMake || formErrors.vehicleModel) && (
+                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg flex items-start gap-3">
+                  <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-red-400 text-sm">Please complete all required fields</span>
+                </div>
+              )}
+              
+              <div className="grid md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Year *</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-2">
+                    Year <span className="text-brand-yellow">*</span>
+                  </label>
                   <select
                     value={bookingData.vehicleYear}
                     onChange={(e) => updateBooking('vehicleYear', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                    className={`w-full px-4 py-3 rounded-md bg-brand-raised border text-white focus:outline-none focus:border-brand-yellow transition-colors ${
+                      formErrors.vehicleYear ? 'border-red-500' : 'border-brand-border'
+                    }`}
                   >
                     <option value="">Select Year</option>
                     {Array.from({ length: 15 }, (_, i) => 2026 - i).map(year => (
                       <option key={year} value={year}>{year}</option>
                     ))}
                   </select>
+                  {formErrors.vehicleYear && (
+                    <p className="mt-1 text-red-400 text-xs">{formErrors.vehicleYear}</p>
+                  )}
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Make *</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-2">
+                    Make <span className="text-brand-yellow">*</span>
+                  </label>
                   <select
                     value={bookingData.vehicleMake}
                     onChange={(e) => updateBooking('vehicleMake', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                    className={`w-full px-4 py-3 rounded-md bg-brand-raised border text-white focus:outline-none focus:border-brand-yellow transition-colors ${
+                      formErrors.vehicleMake ? 'border-red-500' : 'border-brand-border'
+                    }`}
                   >
                     <option value="">Select Make</option>
                     {vehicleMakes.map(make => (
                       <option key={make} value={make}>{make}</option>
                     ))}
                   </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Model *</label>
-                  <input
-                    type="text"
-                    value={bookingData.vehicleModel}
-                    onChange={(e) => updateBooking('vehicleModel', e.target.value)}
-                    placeholder="e.g., Camry, Civic, Montero"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-yellow"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Trim</label>
-                  <input
-                    type="text"
-                    value={bookingData.vehicleTrim}
-                    onChange={(e) => updateBooking('vehicleTrim', e.target.value)}
-                    placeholder="e.g., XE, LX, Sport"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-yellow"
-                  />
+                  {formErrors.vehicleMake && (
+                    <p className="mt-1 text-red-400 text-xs">{formErrors.vehicleMake}</p>
+                  )}
                 </div>
               </div>
+              
+              <div className="mb-4">
+                <label className="block text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-2">
+                  Model <span className="text-brand-yellow">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={bookingData.vehicleModel}
+                  onChange={(e) => updateBooking('vehicleModel', e.target.value)}
+                  placeholder="e.g., Vios, Civic, Montero"
+                  className={`w-full px-4 py-3 rounded-md bg-brand-raised border text-white focus:outline-none focus:border-brand-yellow transition-colors ${
+                    formErrors.vehicleModel ? 'border-red-500' : 'border-brand-border'
+                  }`}
+                />
+                {formErrors.vehicleModel && (
+                  <p className="mt-1 text-red-400 text-xs">{formErrors.vehicleModel}</p>
+                )}
+              </div>
 
-              <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                <p className="text-sm text-gray-600">
-                  💡 <strong>Tip:</strong> Don't know your exact model? You can manually enter details in the next step.
-                </p>
+              <div className="mb-4">
+                <label className="block text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-2">
+                  Plate Number <span className="text-brand-yellow">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={bookingData.plateNumber}
+                  onChange={(e) => updateBooking('plateNumber', e.target.value.toUpperCase())}
+                  placeholder="e.g., ABC-1234"
+                  className={`w-full px-4 py-3 rounded-md bg-brand-raised border text-white focus:outline-none focus:border-brand-yellow transition-colors ${
+                    formErrors.plateNumber ? 'border-red-500' : 'border-brand-border'
+                  }`}
+                />
+                {formErrors.plateNumber && (
+                  <p className="mt-1 text-red-400 text-xs">{formErrors.plateNumber}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-2">
+                  Trim (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={bookingData.vehicleTrim}
+                  onChange={(e) => updateBooking('vehicleTrim', e.target.value)}
+                  placeholder="e.g., G, S, EX, LX"
+                  className="w-full px-4 py-3 rounded-md bg-brand-raised border border-brand-border text-white focus:outline-none focus:border-brand-yellow transition-colors"
+                />
+              </div>
+
+              <div className="flex justify-between mt-6">
+                <button
+                  onClick={prevStep}
+                  className="px-6 py-3 rounded-md font-display font-bold uppercase tracking-wider text-brand-textMuted border border-brand-border hover:border-brand-yellow hover:text-white transition-all"
+                >
+                  ← Back
+                </button>
+                <button
+                  onClick={nextStep}
+                  disabled={!isStepValid()}
+                  className={`px-8 py-3 rounded-md font-display font-bold uppercase tracking-wider transition-all ${
+                    isStepValid()
+                      ? 'bg-brand-yellow text-black hover:bg-yellow-400 shadow-[0_0_24px_rgba(255,215,0,0.3)] hover:-translate-y-0.5'
+                      : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  Next: Select Services →
+                </button>
               </div>
             </div>
           )}
 
-          {/* Step 2: Service Selection */}
-          {currentStep === 2 && (
-            <div className="animate-fade-in">
-              <h2 className="text-2xl font-bold text-brand-black mb-6">Select Services</h2>
+          {/* STEP 3: Services */}
+          {currentStep === 3 && (
+            <div className="animate-fade-up">
+              <h2 className="text-2xl font-display font-bold uppercase text-white mb-2">Select Services</h2>
+              <p className="text-brand-textMuted text-sm mb-6">Choose one or more services for your appointment.</p>
               
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
                 {services.map((service) => (
-                  <button
+                  <div
                     key={service.id}
                     onClick={() => {
                       const isSelected = bookingData.selectedServices.includes(service.name);
-                      if (isSelected) {
-                        updateBooking('selectedServices', bookingData.selectedServices.filter(s => s !== service.name));
-                      } else {
-                        updateBooking('selectedServices', [...bookingData.selectedServices, service.name]);
-                      }
+                      updateBooking(
+                        'selectedServices',
+                        isSelected
+                          ? bookingData.selectedServices.filter(s => s !== service.name)
+                          : [...bookingData.selectedServices, service.name]
+                      );
                     }}
-                    className={`p-4 rounded-lg border-2 transition-all ${
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                       bookingData.selectedServices.includes(service.name)
-                        ? 'border-brand-yellow bg-yellow-50'
-                        : 'border-gray-200 hover:border-brand-yellow'
+                        ? 'border-brand-yellow bg-brand-yellow/10'
+                        : 'border-brand-border bg-brand-raised hover:border-brand-yellow/40'
                     }`}
                   >
-                    <div className={`text-2xl mb-2 ${
-                      bookingData.selectedServices.includes(service.name) ? 'text-brand-yellow' : 'text-gray-400'
-                    }`}>
-                      {service.icon === 'tyre' && '🛞'}
-                      {service.icon === 'oil' && '🛢️'}
-                      {service.icon === 'battery' && '🔋'}
-                      {service.icon === 'brakes' && '🔧'}
-                      {service.icon === 'clutch' && '⚙️'}
-                      {service.icon === 'maintenance' && '🔨'}
-                      {service.icon === 'aircon' && '❄️'}
-                      {service.icon === 'suspension' && '📍'}
-                      {service.icon === 'transmission' && '🔩'}
-                    </div>
-                    <div className="font-medium text-sm">{service.name}</div>
-                  </button>
+                    <div className="text-brand-yellow text-2xl mb-2">{service.icon === 'tyre' ? '🔄' : service.icon === 'oil' ? '🛢️' : service.icon === 'battery' ? '🔋' : '🔧'}</div>
+                    <div className="font-display font-bold text-white text-sm uppercase">{service.name}</div>
+                  </div>
                 ))}
               </div>
 
-              {bookingData.selectedServices.length === 0 && (
-                <p className="text-red-500 text-sm">Please select at least one service</p>
-              )}
-            </div>
-          )}
-
-          {/* Step 3: Location & Time */}
-          {currentStep === 3 && (
-            <div className="animate-fade-in">
-              <h2 className="text-2xl font-bold text-brand-black mb-6">Choose Location & Time</h2>
-              
+              {/* Other Services Input */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Select Location *</label>
-                <select
-                  value={bookingData.selectedLocation}
-                  onChange={(e) => updateBooking('selectedLocation', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-yellow"
-                >
-                  <option value="">Choose a location</option>
-                  {locations.map((loc) => (
-                    <option key={loc.id} value={loc.id}>
-                      {loc.name} - {loc.area} {loc.status === 'coming-soon' ? '(Coming Soon)' : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-4 mb-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Select Date *</label>
-                  <input
-                    type="date"
-                    value={bookingData.selectedDate}
-                    min={new Date().toISOString().split('T')[0]}
-                    onChange={(e) => updateBooking('selectedDate', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-yellow"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Select Time *</label>
-                  <select
-                    value={bookingData.selectedTime}
-                    onChange={(e) => updateBooking('selectedTime', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-yellow"
-                  >
-                    <option value="">Choose a time</option>
-                    {timeSlots.map((slot) => (
-                      <option key={slot} value={slot}>{slot}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-800">
-                  🕐 <strong>Business Hours:</strong> 8:00 AM - 6:00 PM, Monday to Saturday
+                <label className="block text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-2">
+                  Other Services (Optional)
+                </label>
+                <textarea
+                  value={bookingData.otherServices || ''}
+                  onChange={(e) => updateBooking('otherServices', e.target.value)}
+                  placeholder="Describe any other services you need (e.g., engine diagnostics, transmission repair, AC service, etc.)"
+                  rows={3}
+                  className="w-full px-4 py-3 rounded-md bg-brand-raised border border-brand-border text-white placeholder-brand-textDim focus:outline-none focus:border-brand-yellow transition-colors resize-none"
+                />
+                <p className="mt-1 text-xs text-brand-textDim">
+                  Not seeing what you need? Describe it here and we'll prepare for your visit.
                 </p>
               </div>
+
+              <div className="flex justify-between mt-6">
+                <button
+                  onClick={prevStep}
+                  className="px-6 py-3 rounded-md font-display font-bold uppercase tracking-wider text-brand-textMuted border border-brand-border hover:border-brand-yellow hover:text-white transition-all"
+                >
+                  ← Back
+                </button>
+                <button
+                  onClick={nextStep}
+                  disabled={!isStepValid()}
+                  className={`px-8 py-3 rounded-md font-display font-bold uppercase tracking-wider transition-all ${
+                    isStepValid()
+                      ? 'bg-brand-yellow text-black hover:bg-yellow-400'
+                      : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  Next: Date & Time →
+                </button>
+              </div>
             </div>
           )}
 
-          {/* Step 4: Customer Details */}
+          {/* STEP 4: Date & Time */}
           {currentStep === 4 && (
-            <div className="animate-fade-in">
-              <h2 className="text-2xl font-bold text-brand-black mb-6">Your Details</h2>
+            <div className="animate-fade-up">
+              <h2 className="text-2xl font-display font-bold uppercase text-white mb-2">Date & Time</h2>
+              <p className="text-brand-textMuted text-sm mb-6">Select your preferred appointment date and time slot.</p>
               
-              <div className="grid md:grid-cols-2 gap-4 mb-4">
+              <div className="mb-6">
+                <label className="block text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-2">
+                  Select Date <span className="text-brand-yellow">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={bookingData.selectedDate}
+                  onChange={(e) => updateBooking('selectedDate', e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full px-4 py-3 rounded-md bg-brand-raised border border-brand-border text-white focus:outline-none focus:border-brand-yellow"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-3">
+                  Available Time Slots
+                </label>
+                <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
+                  {timeSlots.map((time) => (
+                    <button
+                      key={time}
+                      onClick={() => updateBooking('selectedTime', time)}
+                      className={`py-2 px-3 rounded-md text-sm font-medium transition-all ${
+                        bookingData.selectedTime === time
+                          ? 'bg-brand-yellow text-black'
+                          : 'bg-brand-raised text-brand-textMuted border border-brand-border hover:border-brand-yellow'
+                      }`}
+                    >
+                      {time}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-between mt-6">
+                <button
+                  onClick={prevStep}
+                  className="px-6 py-3 rounded-md font-display font-bold uppercase tracking-wider text-brand-textMuted border border-brand-border hover:border-brand-yellow hover:text-white transition-all"
+                >
+                  ← Back
+                </button>
+                <button
+                  onClick={nextStep}
+                  disabled={!isStepValid()}
+                  className={`px-8 py-3 rounded-md font-display font-bold uppercase tracking-wider transition-all ${
+                    isStepValid()
+                      ? 'bg-brand-yellow text-black hover:bg-yellow-400'
+                      : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  Next: Your Info →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 5: Customer Details */}
+          {currentStep === 5 && (
+            <div className="animate-fade-up">
+              <h2 className="text-2xl font-display font-bold uppercase text-white mb-2">Your Information</h2>
+              <p className="text-brand-textMuted text-sm mb-6">We'll use these details to confirm and contact you about your appointment.</p>
+              
+              {/* Error Summary */}
+              {(formErrors.fullName || formErrors.phone || formErrors.email) && (
+                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg flex items-start gap-3">
+                  <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-red-400 text-sm">Please correct the errors below</span>
+                </div>
+              )}
+              
+              <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-2">
+                    Full Name <span className="text-brand-yellow">*</span>
+                  </label>
                   <input
                     type="text"
                     value={bookingData.fullName}
                     onChange={(e) => updateBooking('fullName', e.target.value)}
                     placeholder="Juan Dela Cruz"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                    className={`w-full px-4 py-3 rounded-md bg-brand-raised border text-white focus:outline-none focus:border-brand-yellow transition-colors ${
+                      formErrors.fullName ? 'border-red-500' : 'border-brand-border'
+                    }`}
                   />
+                  {formErrors.fullName && (
+                    <p className="mt-1 text-red-400 text-xs">{formErrors.fullName}</p>
+                  )}
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
-                  <input
-                    type="tel"
-                    value={bookingData.phone}
-                    onChange={(e) => updateBooking('phone', e.target.value)}
-                    placeholder="0917 123 4567"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-yellow"
-                  />
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
-                <input
-                  type="email"
-                  value={bookingData.email}
-                  onChange={(e) => updateBooking('email', e.target.value)}
-                  placeholder="juan@example.com"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-yellow"
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Current Mileage (km)</label>
-                <input
-                  type="number"
-                  value={bookingData.mileage}
-                  onChange={(e) => updateBooking('mileage', e.target.value)}
-                  placeholder="e.g., 50000"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-yellow"
-                />
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Special Requests</label>
-                <textarea
-                  value={bookingData.specialRequests}
-                  onChange={(e) => updateBooking('specialRequests', e.target.value)}
-                  placeholder="Any specific concerns or requests..."
-                  rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-yellow"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Step 5: Confirmation */}
-          {currentStep === 5 && (
-            <div className="animate-fade-in">
-              <h2 className="text-2xl font-bold text-brand-black mb-6">Confirm Booking</h2>
-              
-              <div className="bg-gray-50 rounded-lg p-6 space-y-4 mb-6">
-                <div>
-                  <h3 className="font-semibold text-gray-700 mb-2">🚗 Vehicle</h3>
-                  <p className="text-gray-600">
-                    {bookingData.vehicleYear} {bookingData.vehicleMake} {bookingData.vehicleModel}
-                    {bookingData.vehicleTrim && ` ${bookingData.vehicleTrim}`}
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-gray-700 mb-2">🔧 Services</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {bookingData.selectedServices.map(service => (
-                      <span key={service} className="bg-brand-yellow/20 text-brand-black px-3 py-1 rounded-full text-sm">
-                        {service}
-                      </span>
-                    ))}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-2">
+                      Phone <span className="text-brand-yellow">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      value={bookingData.phone}
+                      onChange={(e) => updateBooking('phone', e.target.value)}
+                      placeholder="0917 123 4567"
+                      className={`w-full px-4 py-3 rounded-md bg-brand-raised border text-white focus:outline-none focus:border-brand-yellow transition-colors ${
+                        formErrors.phone ? 'border-red-500' : 'border-brand-border'
+                      }`}
+                    />
+                    {formErrors.phone && (
+                      <p className="mt-1 text-red-400 text-xs">{formErrors.phone}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-2">
+                      Email <span className="text-brand-yellow">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      value={bookingData.email}
+                      onChange={(e) => updateBooking('email', e.target.value)}
+                      placeholder="juan@example.com"
+                      className={`w-full px-4 py-3 rounded-md bg-brand-raised border text-white focus:outline-none focus:border-brand-yellow transition-colors ${
+                        formErrors.email ? 'border-red-500' : 'border-brand-border'
+                      }`}
+                    />
+                    {formErrors.email && (
+                      <p className="mt-1 text-red-400 text-xs">{formErrors.email}</p>
+                    )}
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-gray-700 mb-2">📍 Location & Time</h3>
-                  <p className="text-gray-600">
-                    {locations.find(l => l.id === bookingData.selectedLocation)?.name}
-                  </p>
-                  <p className="text-gray-600">
-                    {bookingData.selectedDate} at {bookingData.selectedTime}
-                  </p>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-2">
+                    Vehicle Mileage (Optional)
+                  </label>
+                  <input
+                    type="number"
+                    value={bookingData.mileage}
+                    onChange={(e) => updateBooking('mileage', e.target.value)}
+                    placeholder="e.g., 50000"
+                    className="w-full px-4 py-3 rounded-md bg-brand-raised border border-brand-border text-white focus:outline-none focus:border-brand-yellow transition-colors"
+                  />
+                  <p className="mt-1 text-brand-textDim text-xs">Current odometer reading in kilometers</p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-gray-700 mb-2">👤 Contact</h3>
-                  <p className="text-gray-600">{bookingData.fullName}</p>
-                  <p className="text-gray-600">{bookingData.phone}</p>
-                  <p className="text-gray-600">{bookingData.email}</p>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-2">
+                    Special Requests (Optional)
+                  </label>
+                  <textarea
+                    value={bookingData.specialRequests}
+                    onChange={(e) => updateBooking('specialRequests', e.target.value)}
+                    placeholder="Any specific concerns or requests..."
+                    rows={3}
+                    className="w-full px-4 py-3 rounded-md bg-brand-raised border border-brand-border text-white focus:outline-none focus:border-brand-yellow transition-colors resize-none"
+                  />
                 </div>
               </div>
 
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <p className="text-sm text-yellow-800">
-                  📧 You will receive a confirmation email and SMS shortly after booking.
-                </p>
+              <div className="flex justify-between mt-6">
+                <button
+                  onClick={prevStep}
+                  className="px-6 py-3 rounded-md font-display font-bold uppercase tracking-wider text-brand-textMuted border border-brand-border hover:border-brand-yellow hover:text-white transition-all"
+                >
+                  ← Back
+                </button>
+                <button
+                  onClick={nextStep}
+                  disabled={!isStepValid()}
+                  className={`px-8 py-3 rounded-md font-display font-bold uppercase tracking-wider transition-all ${
+                    isStepValid()
+                      ? 'bg-brand-yellow text-black hover:bg-yellow-400 shadow-[0_0_24px_rgba(255,215,0,0.3)] hover:-translate-y-0.5'
+                      : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  Next: Review →
+                </button>
               </div>
             </div>
           )}
 
-          {/* Navigation Buttons */}
-          <div className="flex justify-between mt-8 pt-6 border-t">
-            {currentStep > 1 ? (
-              <button
-                onClick={prevStep}
-                className="px-6 py-3 border border-gray-300 rounded-md font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                ← Back
-              </button>
-            ) : (
-              <div></div>
-            )}
+          {/* STEP 6: Review & Confirm */}
+          {currentStep === 6 && (
+            <div className="animate-fade-up">
+              <h2 className="text-2xl font-display font-bold uppercase text-white mb-2">Review & Confirm</h2>
+              <p className="text-brand-textMuted text-sm mb-6">Please review your booking details before confirming.</p>
+              
+              {/* Success Message Animation */}
+              {showSuccess && (
+                <div className="mb-6 p-6 bg-green-500/10 border border-green-500/50 rounded-lg text-center animate-fade-up">
+                  <div className="w-16 h-16 mx-auto mb-3 bg-green-500 rounded-full flex items-center justify-center">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h3 className="font-display font-bold text-white text-lg mb-1">Booking Submitted!</h3>
+                  <p className="text-green-400 text-sm">Redirecting to confirmation...</p>
+                </div>
+              )}
+              
+              <div className="space-y-4 mb-6">
+                {/* Branch Details */}
+                <div className="bg-brand-raised border border-brand-border rounded-lg p-5">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-brand-yellow/10 border border-brand-yellow/25 flex items-center justify-center flex-shrink-0">
+                      <span className="text-2xl">📍</span>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-display font-bold text-white mb-1">Branch</h3>
+                      <p className="text-white text-sm">{selectedBranchDetails?.name || 'Not selected'}</p>
+                      <p className="text-brand-textMuted text-xs mt-1">
+                        📍 {selectedBranchDetails?.area}, {selectedBranchDetails?.city}
+                      </p>
+                      {selectedBranchDetails && (
+                        <div className="flex items-center gap-2 mt-2">
+                          <div className="flex items-center">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <svg
+                                key={star}
+                                className={`w-3 h-3 ${
+                                  star <= Math.round(selectedBranchDetails.rating)
+                                    ? 'text-yellow-400 fill-yellow-400'
+                                    : 'text-gray-600'
+                                }`}
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg>
+                            ))}
+                          </div>
+                          <span className="text-brand-textDim text-xs">
+                            {selectedBranchDetails.rating} ({selectedBranchDetails.reviewCount} reviews)
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
 
-            {currentStep < 5 ? (
-              <button
-                onClick={nextStep}
-                disabled={!isStepValid()}
-                className={`px-8 py-3 rounded-md font-semibold transition-all ${
-                  isStepValid()
-                    ? 'bg-brand-yellow text-brand-black hover:bg-yellow-400'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
-              >
-                Continue →
-              </button>
-            ) : (
-              <button
-                onClick={handleSubmit}
-                disabled={!isStepValid()}
-                className={`px-8 py-3 rounded-md font-semibold transition-all ${
-                  isStepValid()
-                    ? 'bg-brand-yellow text-brand-black hover:bg-yellow-400'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
-              >
-                Confirm Booking ✓
-              </button>
-            )}
-          </div>
-        </div>
+                {/* Vehicle Details */}
+                <div className="bg-brand-raised border border-brand-border rounded-lg p-5">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-brand-yellow/10 border border-brand-yellow/25 flex items-center justify-center flex-shrink-0">
+                      <span className="text-2xl">🚗</span>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-display font-bold text-white mb-1">Vehicle</h3>
+                      <p className="text-white text-sm">
+                        {bookingData.vehicleYear} {bookingData.vehicleMake} {bookingData.vehicleModel}
+                        {bookingData.vehicleTrim && ` ${bookingData.vehicleTrim}`}
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
-        {/* Back to Home */}
-        <div className="text-center mt-6">
-          <a href="/" className="text-gray-600 hover:text-brand-yellow transition-colors">
-            ← Go back to Home Page
-          </a>
+                {/* Services */}
+                <div className="bg-brand-raised border border-brand-border rounded-lg p-5">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-brand-yellow/10 border border-brand-yellow/25 flex items-center justify-center flex-shrink-0">
+                      <span className="text-2xl">🔧</span>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-display font-bold text-white mb-3">Services ({bookingData.selectedServices.length})</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {bookingData.selectedServices.map(service => (
+                          <span key={service} className="text-xs px-3 py-1.5 rounded-full bg-brand-yellow/10 border border-brand-yellow/30 text-brand-yellow font-medium">
+                            {service}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Date & Time */}
+                <div className="bg-brand-raised border border-brand-border rounded-lg p-5">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-brand-yellow/10 border border-brand-yellow/25 flex items-center justify-center flex-shrink-0">
+                      <span className="text-2xl">📅</span>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-display font-bold text-white mb-1">Appointment</h3>
+                      <p className="text-white text-sm">
+                        {new Date(bookingData.selectedDate).toLocaleDateString('en-US', { 
+                          weekday: 'long',
+                          month: 'long', 
+                          day: 'numeric', 
+                          year: 'numeric' 
+                        })}
+                      </p>
+                      <p className="text-brand-yellow text-sm font-bold mt-1">
+                        ⏰ {bookingData.selectedTime}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contact Details */}
+                <div className="bg-brand-raised border border-brand-border rounded-lg p-5">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-brand-yellow/10 border border-brand-yellow/25 flex items-center justify-center flex-shrink-0">
+                      <span className="text-2xl">👤</span>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-display font-bold text-white mb-2">Contact Information</h3>
+                      <div className="space-y-1.5">
+                        <p className="text-white text-sm">👨 {bookingData.fullName}</p>
+                        <p className="text-brand-textMuted text-sm">📱 {bookingData.phone}</p>
+                        <p className="text-brand-textMuted text-sm">✉️ {bookingData.email}</p>
+                        {bookingData.mileage && (
+                          <p className="text-brand-textMuted text-sm">🚗 Mileage: {parseInt(bookingData.mileage).toLocaleString()} km</p>
+                        )}
+                      </div>
+                      {bookingData.specialRequests && (
+                        <div className="mt-3 pt-3 border-t border-brand-border">
+                          <p className="text-brand-textDim text-xs font-bold uppercase mb-1">Special Requests:</p>
+                          <p className="text-brand-textMuted text-sm">{bookingData.specialRequests}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Terms Notice */}
+              <div className="mb-6 p-4 bg-brand-yellow/5 border border-brand-yellow/20 rounded-lg">
+                <p className="text-brand-textDim text-xs leading-relaxed">
+                  By confirming this booking, you agree to our terms of service. We'll send a confirmation to your email and phone number shortly after submission.
+                </p>
+              </div>
+
+              <div className="flex justify-between mt-6">
+                <button
+                  onClick={prevStep}
+                  disabled={isSubmitting}
+                  className="px-6 py-3 rounded-md font-display font-bold uppercase tracking-wider text-brand-textMuted border border-brand-border hover:border-brand-yellow hover:text-white transition-all disabled:opacity-50"
+                >
+                  ← Back
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className={`px-8 py-3 rounded-md font-display font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${
+                    isSubmitting
+                      ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                      : 'bg-brand-yellow text-black hover:bg-yellow-400 shadow-[0_0_24px_rgba(255,215,0,0.3)] hover:-translate-y-0.5'
+                  }`}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      ✓ Confirm Booking
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
     </div>

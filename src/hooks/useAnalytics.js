@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-const GA4_ID = import.meta.env.VITE_GA4_ID || "G-XXXXXXXXXX";
+const GA4_ID = import.meta.env.VITE_GA4_ID || "G-6SDBFM0M8K";
 
 /**
  * Google Analytics 4 hook for tracking page views and custom events

@@ -10,7 +10,7 @@ function PromotionsSection() {
       savings: 'SAVE UP TO ₱2,100',
       description: 'when you buy & install 4 Cooper Adventurer All-Season tires',
       validity: 'Valid 3/1/26 - 4/30/26',
-      image: 'https://images.unsplash.com/photo-1578844251758-2f71da645217?w=800&h=500&fit=crop&q=80',
+      image: '/images/car_image_large_promo.jpg',
       cta: 'Claim Offer',
       featured: true
     },
@@ -22,7 +22,7 @@ function PromotionsSection() {
       savings: '',
       description: 'when you buy & install 4 tires from Goodyear',
       validity: 'Valid 3/2/26 - 4/6/26',
-      image: 'https://images.unsplash.com/photo-1597762696664-2c8e71c46f5d?w=800&h=500&fit=crop&q=80',
+      image: '/images/tire_promo.jpg',
       cta: 'Shop Goodyear',
       featured: false
     },
@@ -34,122 +34,99 @@ function PromotionsSection() {
       savings: '',
       description: 'Get instant savings and mail-in rebate on Michelin sets',
       validity: 'Valid through 4/15/26',
-      image: 'https://images.unsplash.com/photo-1543467978-02835c649dd1?w=800&h=500&fit=crop&q=80',
+      image: '/images/tire_promo2.jpg',
       cta: 'Get Rebate',
       featured: false
     }
   ];
 
-  const featuredPromo = promotions.find(p => p.featured);
-  const sidePromos = promotions.filter(p => !p.featured);
-
   return (
-    <section id="promotions" className="py-12 px-4 md:py-16 md:px-6 bg-gradient-to-b from-brand-black to-brand-card">
-      <div className="max-w-[1200px] mx-auto">
+    <section id="promotions" className="py-16 px-4 md:px-6 bg-brand-black">
+      <div className="max-w-[1280px] mx-auto">
         {/* Section Header */}
-        <div className="text-center mb-8">
-          <div className="text-[0.72rem] font-bold tracking-[0.14em] uppercase text-brand-yellow mb-2">
-            Special Offers & Coupons
+        <div className="text-center mb-10">
+          <div className="inline-block bg-red-600 text-white px-4 py-2 rounded font-display font-black uppercase text-sm tracking-wider mb-4 animate-pulse">
+            ⚡ LIMITED TIME ONLY!
           </div>
-          <h2 className="font-display font-bold uppercase text-white text-xl md:text-2xl mb-4">
-            Current <span className="text-brand-yellow">Promotions</span>
+          <h2 className="font-display font-black uppercase text-white text-3xl md:text-5xl mb-3">
+            SPECIAL OFFERS & COUPONS
           </h2>
+          <p className="text-brand-textMuted text-base md:text-lg max-w-2xl mx-auto">
+            Save big on tires, oil changes, brakes, and more. Book your appointment today!
+          </p>
         </div>
 
-        {/* Promo Grid - Featured Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
-          {/* Featured Promo - Left Large Card */}
-          {featuredPromo && (
-            <div 
-              className="lg:col-span-2 relative border-2 border-brand-border rounded-xl overflow-hidden hover:border-brand-yellow/50 transition-colors group h-[400px] md:h-[450px]"
-              style={{ 
-                backgroundImage: `url(${featuredPromo.image})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center'
-              }}
+        {/* Promo Grid - Pep Boys Style */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {promotions.map((promo) => (
+            <div
+              key={promo.id}
+              className={`relative bg-white rounded-xl overflow-hidden shadow-2xl hover:shadow-[0_0_30px_rgba(255,215,0,0.3)] transition-all group ${
+                promo.featured ? 'md:col-span-2 lg:col-span-2' : ''
+              }`}
             >
-              {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/40" />
-              
-              {/* Content */}
-              <div className="relative z-10 h-full flex flex-col justify-end p-6 md:p-8">
-                <div className="text-brand-textDim text-[10px] font-bold uppercase mb-2">
-                  {featuredPromo.brand}
-                </div>
-                <h3 className="font-display font-black uppercase text-white text-2xl md:text-4xl mb-2 leading-tight">
-                  {featuredPromo.title}
-                </h3>
-                {featuredPromo.subtitle && (
-                  <p className="font-bold text-brand-yellow text-base md:text-xl mb-3 uppercase">
-                    {featuredPromo.subtitle}
-                  </p>
-                )}
-                <p className="text-brand-textMuted text-sm md:text-base mb-4 max-w-lg">
-                  {featuredPromo.description}
-                </p>
-                <div className="inline-block bg-brand-yellow/20 border border-brand-yellow/40 rounded-lg px-4 py-3 mb-6 w-fit backdrop-blur-sm">
-                  <div className="font-bold text-brand-yellow text-lg md:text-xl">
-                    {featuredPromo.savings}
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <Link
-                    to="/book"
-                    className="inline-block bg-brand-yellow text-brand-black px-8 py-3 rounded font-display font-bold uppercase text-sm text-center hover:bg-yellow-400 transition-colors"
-                  >
-                    {featuredPromo.cta}
-                  </Link>
-                  <p className="text-brand-textDim text-[10px]">
-                    {featuredPromo.validity}
-                  </p>
+              {/* Discount Badge - Top Left */}
+              <div className="absolute top-0 left-0 z-20">
+                <div className="bg-red-600 text-white px-4 py-2 rounded-br-xl font-display font-black uppercase text-sm md:text-base">
+                  {promo.savings || promo.subtitle}
                 </div>
               </div>
-            </div>
-          )}
 
-          {/* Side Promos - Right Stacked Cards */}
-          <div className="flex flex-col gap-4">
-            {sidePromos.map((promo) => (
-              <div
-                key={promo.id}
-                className="flex-1 relative border border-brand-border rounded-lg overflow-hidden hover:border-brand-yellow/50 transition-colors group h-[200px]"
+              {/* Image Background */}
+              <div 
+                className={`w-full ${promo.featured ? 'h-[300px] md:h-[400px]' : 'h-[250px]'}`}
                 style={{ 
                   backgroundImage: `url(${promo.image})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center'
                 }}
-              >
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/80 to-transparent" />
-                
-                {/* Content */}
-                <div className="relative z-10 h-full flex flex-col justify-end p-4">
-                  <div className="text-brand-textDim text-[10px] font-bold uppercase mb-1">
-                    {promo.brand}
-                  </div>
-                  <h3 className="font-display font-black uppercase text-white text-lg md:text-xl mb-1 leading-tight">
-                    {promo.title}
-                  </h3>
-                  {promo.subtitle && (
-                    <p className="font-bold text-brand-yellow text-sm uppercase mb-2">
-                      {promo.subtitle}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-3 mt-auto">
-                    <Link
-                      to="/book"
-                      className="inline-block bg-brand-yellow text-brand-black px-5 py-2 rounded font-display font-bold uppercase text-xs hover:bg-yellow-400 transition-colors"
-                    >
-                      {promo.cta}
-                    </Link>
-                    <p className="text-brand-textDim text-[10px]">
-                      {promo.validity}
-                    </p>
-                  </div>
+              />
+
+              {/* Content Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent" />
+
+              {/* Text Content */}
+              <div className="absolute bottom-0 left-0 right-0 p-6">
+                {/* Brand Tag */}
+                <div className="inline-block bg-brand-yellow text-brand-black px-3 py-1 rounded font-bold text-xs uppercase mb-3">
+                  {promo.brand}
                 </div>
+
+                {/* Title */}
+                <h3 className="font-display font-black uppercase text-white text-2xl md:text-4xl mb-2 leading-tight">
+                  {promo.title}
+                </h3>
+
+                {/* Subtitle */}
+                {promo.subtitle && !promo.savings && (
+                  <p className="font-bold text-brand-yellow text-lg md:text-xl mb-3 uppercase">
+                    {promo.subtitle}
+                  </p>
+                )}
+
+                {/* Description */}
+                <p className="text-gray-200 text-sm md:text-base mb-4 line-clamp-2">
+                  {promo.description}
+                </p>
+
+                {/* CTA Button */}
+                <Link
+                  to="/book"
+                  className="inline-flex items-center gap-2 bg-brand-yellow text-brand-black px-6 py-3 rounded-lg font-display font-bold uppercase text-sm hover:bg-yellow-400 hover:scale-105 transition-all shadow-lg"
+                >
+                  {promo.cta}
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+
+                {/* Validity */}
+                <p className="text-gray-400 text-xs mt-3">
+                  {promo.validity}
+                </p>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
 
         {/* Credit Card Offer */}

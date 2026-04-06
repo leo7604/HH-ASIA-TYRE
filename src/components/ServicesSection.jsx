@@ -118,6 +118,20 @@ function ServicesSection() {
                 <div className="w-14 h-14 rounded-xl bg-brand-yellow/10 border border-brand-yellow/25 flex items-center justify-center text-brand-yellow mb-4 group-hover:bg-brand-yellow group-hover:text-black transition-all">
                   {serviceIcons[service.icon]}
                 </div>
+                
+                {/* Duration & Price Badges */}
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xs bg-brand-yellow/10 border border-brand-yellow/30 text-brand-yellow px-2 py-1 rounded-full flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {service.duration}
+                  </span>
+                  <span className="text-xs bg-green-500/10 border border-green-500/30 text-green-400 px-2 py-1 rounded-full font-semibold">
+                    {service.priceRange}
+                  </span>
+                </div>
+                
                 <h3 className="font-display font-bold uppercase text-white text-xl mb-2">
                   {service.name}
                 </h3>

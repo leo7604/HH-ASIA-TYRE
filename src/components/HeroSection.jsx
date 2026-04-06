@@ -6,6 +6,7 @@ import { locations } from '../data/mockData';
 const heroSlides = [
   {
     id: 1,
+    branchId: 1, // Alabang
     image: '/images/alabang.jpg',
     eyebrow: 'Metro Manila',
     title: 'ALABANG BRANCH',
@@ -13,12 +14,13 @@ const heroSlides = [
     address: 'Alabang-Zapote Rd, Las Piñas City, Metro Manila',
     phone: '8842-9148',
     validity: 'Open Mon-Sat: 8AM-6PM',
-    primaryCTA: { text: 'Book Now', href: '/book', icon: 'calendar' },
+    primaryCTA: { text: 'Book Now', href: '/book?branch=1', icon: 'calendar' },
     secondaryCTA: { text: 'Get Directions', href: '#locations', icon: 'map' },
     badges: ['Tire Services', 'Oil Change', 'Brake Repair', 'Battery Replacement']
   },
   {
     id: 2,
+    branchId: 2, // Bicutan
     image: '/images/bicutan.jpg',
     eyebrow: 'Metro Manila',
     title: 'BICUTAN BRANCH',
@@ -26,12 +28,13 @@ const heroSlides = [
     address: '118 Doña Soledad Avenue, Don Bosco, Parañaque City',
     phone: '8334-2858',
     validity: 'Open Mon-Sat: 8AM-6PM',
-    primaryCTA: { text: 'Book Now', href: '/book', icon: 'calendar' },
+    primaryCTA: { text: 'Book Now', href: '/book?branch=2', icon: 'calendar' },
     secondaryCTA: { text: 'Get Directions', href: '#locations', icon: 'map' },
     badges: ['Tire Services', 'Oil Change', 'Batteries']
   },
   {
     id: 3,
+    branchId: 3, // Bacoor
     image: '/images/bacoor.jpg',
     eyebrow: 'Cavite',
     title: 'BACOOR BRANCH',
@@ -39,12 +42,13 @@ const heroSlides = [
     address: 'Aguinaldo Highway Nlog II, Bacoor, Cavite',
     phone: '(046) 417-8415',
     validity: 'Open Mon-Sat: 8AM-6PM',
-    primaryCTA: { text: 'Book Now', href: '/book', icon: 'calendar' },
+    primaryCTA: { text: 'Book Now', href: '/book?branch=3', icon: 'calendar' },
     secondaryCTA: { text: 'Get Directions', href: '#locations', icon: 'map' },
     badges: ['Tire Services', 'Oil Change', 'Brake Services']
   },
   {
     id: 4,
+    branchId: 5, // Laoag
     image: '/images/laoag.jpg',
     eyebrow: 'Ilocos Norte',
     title: 'LAOAG BRANCH',
@@ -52,7 +56,7 @@ const heroSlides = [
     address: 'John Henry Car Care Center, Bacarra Road, Laoag City',
     phone: '(077) 772-3456',
     validity: 'Open Mon-Sat: 8AM-5PM',
-    primaryCTA: { text: 'Book Now', href: '/book', icon: 'calendar' },
+    primaryCTA: { text: 'Book Now', href: '/book?branch=5', icon: 'calendar' },
     secondaryCTA: { text: 'Get Directions', href: '#locations', icon: 'map' },
     badges: ['Tire Services', 'Oil Change', 'Suspension', 'Full Auto Care']
   }

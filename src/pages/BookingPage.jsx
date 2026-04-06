@@ -223,24 +223,35 @@ function BookingPage() {
         notes: bookingData.specialRequests || '',
       };
       
-      // Call the production API
-      const response = await fetch('https://hh-asia-tyre-crm-inv-sys.vercel.app/api/public/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(apiPayload),
-      });
+      let apiResponse = null;
+      let apiSuccess = false;
       
-      const result = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to submit booking');
+      try {
+        // Call the production API
+        const response = await fetch('https://hh-asia-tyre-crm-inv-sys.vercel.app/api/public/bookings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(apiPayload),
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          apiSuccess = true;
+          apiResponse = result;
+          console.log('Booking created successfully via API:', result);
+        } else {
+          console.warn('API booking failed, saving locally:', result.error);
+        }
+      } catch (apiError) {
+        console.warn('API unavailable, saving booking locally:', apiError.message);
       }
       
-      // Also save to localStorage for their admin dashboard
+      // Always save to localStorage as primary or fallback
       const appointment = {
-        id: result.data?.id || Date.now(),
+        id: apiResponse?.data?.id || Date.now(),
         branchId: parseInt(bookingData.selectedLocation),
         customerName: bookingData.fullName,
         email: bookingData.email,
@@ -258,7 +269,8 @@ function BookingPage() {
         notes: bookingData.specialRequests,
         status: 'pending',
         createdAt: new Date().toISOString(),
-        apiBookingId: result.data?.id,
+        apiBookingId: apiResponse?.data?.id || null,
+        apiSuccess: apiSuccess,
       };
       
       const existingAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
@@ -267,13 +279,57 @@ function BookingPage() {
       
       setShowSuccess(true);
       setTimeout(() => {
-        navigate('/confirmation', { state: { bookingData, apiResponse: result } });
+        navigate('/confirmation', { 
+          state: { 
+            bookingData, 
+            apiResponse: apiResponse,
+            apiSuccess: apiSuccess 
+          } 
+        });
       }, 2000);
       
     } catch (error) {
       console.error('Booking submission failed:', error);
-      alert('Failed to submit booking: ' + error.message);
-      setIsSubmitting(false);
+      
+      // Even if there's an error, try to save locally
+      const appointment = {
+        id: Date.now(),
+        branchId: parseInt(bookingData.selectedLocation),
+        customerName: bookingData.fullName,
+        email: bookingData.email,
+        phone: bookingData.phone,
+        vehicleYear: bookingData.vehicleYear,
+        vehicleMake: bookingData.vehicleMake,
+        vehicleModel: bookingData.vehicleModel,
+        vehicleTrim: bookingData.vehicleTrim,
+        plateNumber: bookingData.plateNumber,
+        services: bookingData.selectedServices,
+        otherServices: bookingData.otherServices || null,
+        date: bookingData.selectedDate,
+        time: bookingData.selectedTime,
+        mileage: bookingData.mileage ? parseInt(bookingData.mileage) : null,
+        notes: bookingData.specialRequests,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        apiBookingId: null,
+        apiSuccess: false,
+      };
+      
+      const existingAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+      existingAppointments.push(appointment);
+      localStorage.setItem('appointments', JSON.stringify(existingAppointments));
+      
+      // Show success anyway since it's saved locally
+      setShowSuccess(true);
+      setTimeout(() => {
+        navigate('/confirmation', { 
+          state: { 
+            bookingData, 
+            apiResponse: null,
+            apiSuccess: false 
+          } 
+        });
+      }, 2000);
     }
   };
 

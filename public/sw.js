@@ -51,55 +51,36 @@ self.addEventListener('fetch', (event) => {
     caches.match(event.request)
       .then((cachedResponse) => {
         if (cachedResponse) {
-          // Return cached response and update cache in background
-          event.waitUntil(updateCache(event.request));
           return cachedResponse;
         }
 
         // Not in cache - fetch from network
-        return fetchAndCache(event.request);
-      })
-      .catch(() => {
-        // If both cache and network fail, show offline page
-        if (event.request.destination === 'document') {
-          return caches.match('/offline.html');
-        }
+        return fetch(event.request).then((response) => {
+          // Check if we received a valid response
+          if (!response || response.status !== 200) {
+            return response;
+          }
+
+          // Clone the response
+          const responseToCache = response.clone();
+
+          caches.open(CACHE_NAME)
+            .then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+
+          return response;
+        }).catch(() => {
+          // If network fails, try offline page for document requests
+          if (event.request.destination === 'document') {
+            return caches.match('/offline.html');
+          }
+          // For images and other resources, return empty response
+          return new Response('', { status: 404, statusText: 'Not Found' });
+        });
       })
   );
 });
-
-// Fetch from network and cache the response
-async function fetchAndCache(request) {
-  const response = await fetch(request);
-  
-  // Don't cache non-successful responses
-  if (!response || response.status !== 200 || response.type !== 'basic') {
-    return response;
-  }
-
-  // Clone the response
-  const responseToCache = response.clone();
-
-  caches.open(CACHE_NAME)
-    .then((cache) => {
-      cache.put(request, responseToCache);
-    });
-
-  return response;
-}
-
-// Update cache in background
-async function updateCache(request) {
-  try {
-    const response = await fetch(request);
-    if (response && response.status === 200) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, response.clone());
-    }
-  } catch (err) {
-    console.log('Cache update failed:', err);
-  }
-}
 
 // Handle messages from clients
 self.addEventListener('message', (event) => {

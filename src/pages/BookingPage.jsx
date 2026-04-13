@@ -412,8 +412,10 @@ function BookingPage() {
       case 4:
         return bookingData.selectedDate && bookingData.selectedTime;
       case 5:
-        return bookingData.fullName && bookingData.email && bookingData.phone;
+        return bookingData.selectedBay;
       case 6:
+        return bookingData.fullName && bookingData.email && bookingData.phone;
+      case 7:
         return true;
       default:
         return false;

@@ -393,8 +393,8 @@ function SuperAdminDashboard() {
                     <div>
                       <p className="text-white font-semibold">{location.name}</p>
                       <p className="text-brand-textDim text-sm">{location.area}, {location.city}</p>
-                      <p className={`text-xs mt-2 ${location.status === 'open' ? 'text-green-400' : 'text-gray-400'}`}>
-                        {location.status === 'open' ? '● Open' : '● Coming Soon'}
+                      <p className="text-green-400 text-xs mt-2">
+                        ● Open
                       </p>
                     </div>
                     <button

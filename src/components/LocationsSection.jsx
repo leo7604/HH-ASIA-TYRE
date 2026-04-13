@@ -53,15 +53,9 @@ function LocationsSection() {
                   className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                 />
                 <div className="absolute top-4 right-4">
-                  {location.status === 'open' ? (
-                    <span className="bg-green-500 text-white text-xs font-bold uppercase px-3 py-1 rounded-full">
-                      Open
-                    </span>
-                  ) : (
-                    <span className="bg-gray-500 text-white text-xs font-bold uppercase px-3 py-1 rounded-full">
-                      Coming Soon
-                    </span>
-                  )}
+                  <span className="bg-green-500 text-white text-xs font-bold uppercase px-3 py-1 rounded-full">
+                    Open
+                  </span>
                 </div>
               </div>
 

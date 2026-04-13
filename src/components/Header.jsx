@@ -154,9 +154,9 @@ function Header() {
                       <div className="text-white text-sm font-semibold truncate">{location.name}</div>
                       <div className="text-brand-textDim text-[10px]">{location.area}, {location.city}</div>
                       <div className="flex items-center gap-2 mt-1">
-                        <div className={`w-2 h-2 rounded-full ${location.status === 'open' ? 'bg-green-500' : 'bg-gray-500'}`} />
-                        <span className={`text-[10px] ${location.status === 'open' ? 'text-green-400' : 'text-gray-400'}`}>
-                          {location.status === 'open' ? 'Open' : 'Coming Soon'}
+                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                        <span className="text-[10px] text-green-400">
+                          Open
                         </span>
                       </div>
                     </div>

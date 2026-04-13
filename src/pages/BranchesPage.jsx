@@ -76,17 +76,10 @@ function BranchesPage() {
 
                   {/* Status Badge */}
                   <div className="absolute top-4 left-4">
-                    {location.status === 'open' ? (
-                      <div className="flex items-center gap-2 bg-green-500/20 border border-green-500/40 rounded-full px-3 py-1.5">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                        <span className="text-green-400 text-xs font-bold uppercase tracking-wider">Open</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 bg-gray-500/20 border border-gray-500/40 rounded-full px-3 py-1.5">
-                        <div className="w-2 h-2 bg-gray-500 rounded-full" />
-                        <span className="text-gray-400 text-xs font-bold uppercase tracking-wider">Coming Soon</span>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2 bg-green-500/20 border border-green-500/40 rounded-full px-3 py-1.5">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                      <span className="text-green-400 text-xs font-bold uppercase tracking-wider">Open</span>
+                    </div>
                   </div>
                 </div>
 
@@ -151,7 +144,7 @@ function BranchesPage() {
                           : 'bg-gray-700 text-gray-400 cursor-not-allowed'
                       }`}
                     >
-                      {location.status === 'open' ? 'Book Now' : 'Coming Soon'}
+                      Book Now
                     </Link>
                     <a
                       href={location.mapUrl}
@@ -198,17 +191,10 @@ function BranchesPage() {
 
                   {/* Status Badge */}
                   <div className="absolute top-4 left-4">
-                    {location.status === 'open' ? (
-                      <div className="flex items-center gap-2 bg-green-500/20 border border-green-500/40 rounded-full px-3 py-1.5">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                        <span className="text-green-400 text-xs font-bold uppercase tracking-wider">Open</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 bg-gray-500/20 border border-gray-500/40 rounded-full px-3 py-1.5">
-                        <div className="w-2 h-2 bg-gray-500 rounded-full" />
-                        <span className="text-gray-400 text-xs font-bold uppercase tracking-wider">Coming Soon</span>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2 bg-green-500/20 border border-green-500/40 rounded-full px-3 py-1.5">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                      <span className="text-green-400 text-xs font-bold uppercase tracking-wider">Open</span>
+                    </div>
                   </div>
                 </div>
 
@@ -267,13 +253,9 @@ function BranchesPage() {
                   <div className="flex gap-2">
                     <Link
                       to={`/book?branch=${location.id}`}
-                      className={`flex-1 text-center py-2.5 rounded-md font-display font-bold uppercase tracking-wider text-sm transition-all ${
-                        location.status === 'open'
-                          ? 'bg-brand-yellow text-black hover:bg-yellow-400'
-                          : 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                      }`}
+                      className="flex-1 text-center py-2.5 rounded-md font-display font-bold uppercase tracking-wider text-sm bg-brand-yellow text-black hover:bg-yellow-400 transition-all"
                     >
-                      {location.status === 'open' ? 'Book Now' : 'Coming Soon'}
+                      Book Now
                     </Link>
                     <a
                       href={location.mapUrl}

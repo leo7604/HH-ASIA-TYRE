@@ -733,11 +733,7 @@ function BookingPage() {
                           <h3 className="font-display font-bold uppercase text-white">
                             {location.name}
                           </h3>
-                          {location.status === 'open' ? (
-                            <span className="text-green-400 text-xs font-bold uppercase">Open</span>
-                          ) : (
-                            <span className="text-gray-500 text-xs font-bold uppercase">Coming Soon</span>
-                          )}
+                          <span className="text-green-400 text-xs font-bold uppercase">Open</span>
                         </div>
                         <p className="text-brand-textMuted text-xs mb-2">{location.area}, {location.city}</p>
                         <p className="text-brand-textDim text-xs">{location.hours}</p>

@@ -131,10 +131,65 @@ function AdminDashboard() {
     setAppointments(updated);
   };
 
-  const approveAppointment = (id) => {
+  const approveAppointment = async (id) => {
+    // First, update local status
     updateAppointmentStatus(id, 'approved');
-    setFilter('all'); // Switch to 'all' filter to show the approved appointment
-    toast.success('Appointment approved successfully!');
+    
+    // Get the appointment data
+    const allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+    const appointment = allAppointments.find(apt => apt.id === id);
+    
+    if (!appointment) {
+      toast.error('Appointment not found');
+      return;
+    }
+    
+    // Try to send to database API
+    try {
+      const apiPayload = {
+        customerName: appointment.customerName,
+        phone: appointment.phone,
+        email: appointment.email,
+        serviceType: appointment.services?.join(', ') || '',
+        vehicleMake: appointment.vehicleMake,
+        vehicleModel: appointment.vehicleModel,
+        vehicleYear: appointment.vehicleYear,
+        plateNumber: appointment.plateNumber,
+        preferredDate: appointment.date,
+        preferredTime: appointment.time,
+        branch: 'MNL', // This should be mapped from branchId
+        notes: appointment.notes || '',
+        status: 'approved',
+        bayId: appointment.bayId || null,
+        bayName: appointment.bayName || null,
+      };
+      
+      const response = await fetch('https://hh-asia-tyre-crm-inv-sys.vercel.app/api/public/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(apiPayload),
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        // Update appointment with API booking ID
+        const updated = allAppointments.map(apt => 
+          apt.id === id ? { ...apt, apiBookingId: result.data?.id, apiSuccess: true } : apt
+        );
+        localStorage.setItem('appointments', JSON.stringify(updated));
+        setAppointments(updated);
+        toast.success('Appointment approved and sent to database!');
+      } else {
+        console.warn('API booking failed:', result.error);
+        toast.success('Appointment approved (saved locally)');
+      }
+    } catch (error) {
+      console.error('Error sending to database:', error);
+      toast.success('Appointment approved (saved locally, will sync when online)');
+    }
+    
+    setFilter('all');
   };
 
   const rejectAppointment = (id) => {

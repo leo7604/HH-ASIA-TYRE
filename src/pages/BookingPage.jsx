@@ -515,7 +515,9 @@ function BookingPage() {
     try {
       const existingAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
       const bookingsForSlot = existingAppointments.filter(
-        apt => apt.branchId === parseInt(branchId) && apt.date === date
+        apt => apt.branchId === parseInt(branchId) && 
+               apt.date === date &&
+               apt.status !== 'completed'  // Exclude completed bookings
       );
       
       const slotCounts = {};
@@ -558,7 +560,10 @@ function BookingPage() {
       
       const existingAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
       const bookingsForSlot = existingAppointments.filter(
-        apt => apt.branchId === parseInt(branchId) && apt.date === date && apt.time === time
+        apt => apt.branchId === parseInt(branchId) && 
+               apt.date === date && 
+               apt.time === time &&
+               apt.status !== 'completed'  // Exclude completed bookings
       );
       
       // Count bookings per bay

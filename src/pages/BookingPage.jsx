@@ -35,7 +35,10 @@ function BookingPage() {
     selectedDate: '',
     selectedTime: '',
 
-    // Step 5: Customer Details
+    // Step 5: Service Bay
+    selectedBay: '',
+
+    // Step 6: Customer Details
     fullName: '',
     email: '',
     phone: '',
@@ -46,6 +49,8 @@ function BookingPage() {
   const [formErrors, setFormErrors] = useState({});
   const [slotAvailability, setSlotAvailability] = useState({});
   const [checkingSlots, setCheckingSlots] = useState(false);
+  const [bayAvailability, setBayAvailability] = useState({});
+  const [checkingBays, setCheckingBays] = useState(false);
 
   // Filter branches by region
   const manilaBranches = locations.filter(l => l.city === 'Metro Manila' || l.city === 'Cavite');
@@ -173,6 +178,12 @@ function BookingPage() {
         }
         break;
       case 5:
+        if (!bookingData.selectedBay) {
+          errors.selectedBay = 'Please select a service bay';
+          isValid = false;
+        }
+        break;
+      case 6:
         if (!bookingData.fullName.trim()) {
           errors.fullName = 'Required';
           isValid = false;
@@ -288,6 +299,8 @@ function BookingPage() {
       const appointment = {
         id: apiResponse?.data?.id || Date.now(),
         branchId: parseInt(bookingData.selectedLocation),
+        bayId: bookingData.selectedBay ? parseInt(bookingData.selectedBay) : null,
+        bayName: bookingData.selectedBay ? (bayAvailability[bookingData.selectedBay]?.name || 'Unknown') : null,
         customerName: bookingData.fullName,
         email: bookingData.email,
         phone: bookingData.phone,
@@ -528,6 +541,50 @@ function BookingPage() {
     }
   }, [bookingData.selectedLocation, bookingData.selectedDate]);
 
+  // Check service bay availability for selected branch, date, and time
+  const fetchBayAvailability = async (branchId, date, time) => {
+    if (!branchId || !date || !time) return;
+    
+    setCheckingBays(true);
+    
+    try {
+      const branch = locations.find(l => l.id === parseInt(branchId));
+      if (!branch || !branch.serviceBays) {
+        setBayAvailability({});
+        return;
+      }
+      
+      const existingAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+      const bookingsForSlot = existingAppointments.filter(
+        apt => apt.branchId === parseInt(branchId) && apt.date === date && apt.time === time
+      );
+      
+      // Count bookings per bay
+      const bayCounts = {};
+      branch.serviceBays.forEach(bay => {
+        const count = bookingsForSlot.filter(apt => apt.bayId === bay.id).length;
+        bayCounts[bay.id] = {
+          ...bay,
+          available: count === 0,
+          booked: count > 0
+        };
+      });
+      
+      setBayAvailability(bayCounts);
+    } catch (error) {
+      console.error('Error checking bay availability:', error);
+    } finally {
+      setCheckingBays(false);
+    }
+  };
+
+  // Update bay availability when branch, date, or time changes
+  useEffect(() => {
+    if (bookingData.selectedLocation && bookingData.selectedDate && bookingData.selectedTime) {
+      fetchBayAvailability(bookingData.selectedLocation, bookingData.selectedDate, bookingData.selectedTime);
+    }
+  }, [bookingData.selectedLocation, bookingData.selectedDate, bookingData.selectedTime]);
+
   // Filter branches by region
 
   return (
@@ -594,8 +651,9 @@ function BookingPage() {
               { num: 2, label: 'Vehicle', icon: '🚗' },
               { num: 3, label: 'Services', icon: '🔧' },
               { num: 4, label: 'Date/Time', icon: '📅' },
-              { num: 5, label: 'Your Info', icon: '👤' },
-              { num: 6, label: 'Confirm', icon: '✓' }
+              { num: 5, label: 'Service Bay', icon: '🏢' },
+              { num: 6, label: 'Your Info', icon: '👤' },
+              { num: 7, label: 'Confirm', icon: '✓' }
             ].map((step, index) => (
               <div key={step.label} className="flex items-center flex-shrink-0">
                 <div className="flex items-center">
@@ -616,7 +674,7 @@ function BookingPage() {
                     {step.label}
                   </span>
                 </div>
-                {index < 5 && (
+                {index < 6 && (
                   <div
                     className={`w-6 md:w-10 h-0.5 mx-1 ${
                       index + 1 < currentStep ? 'bg-brand-yellow' : 'bg-gray-700'
@@ -1108,14 +1166,139 @@ function BookingPage() {
                       : 'bg-gray-700 text-gray-500 cursor-not-allowed'
                   }`}
                 >
+                  Next: Select Bay →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 5: Service Bay Selection */}
+          {currentStep === 5 && (
+            <div className="animate-fade-up">
+              <h2 className="text-2xl font-display font-bold uppercase text-white mb-2">Select Service Bay</h2>
+              <p className="text-brand-textMuted text-sm mb-6">Choose your preferred service bay for your appointment.</p>
+              
+              {/* Bay Availability Info */}
+              {bookingData.selectedLocation && bookingData.selectedDate && bookingData.selectedTime && (
+                <div className="mb-6 p-4 bg-brand-raised border border-brand-border rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <svg className="w-5 h-5 text-brand-yellow flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                    <div>
+                      <p className="text-white font-semibold text-sm">Appointment Details</p>
+                      <p className="text-brand-textDim text-xs mt-1">
+                        {bookingData.selectedDate} at {bookingData.selectedTime}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Bay Selection Grid */}
+              <div className="mb-6">
+                <label className="block text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-3">
+                  Available Service Bays {checkingBays && <span className="text-brand-yellow text-xs">(Checking availability...)</span>}
+                </label>
+                
+                {checkingBays ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {[1, 2, 3, 4].map(i => (
+                      <div key={i} className="bg-brand-raised border border-brand-border rounded-lg p-4 animate-pulse">
+                        <div className="h-6 bg-gray-700 rounded mb-2"></div>
+                        <div className="h-4 bg-gray-700 rounded w-2/3"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : Object.keys(bayAvailability).length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-brand-textMuted">Please select a date and time first to see available bays.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {Object.values(bayAvailability).map((bay) => {
+                      const isDisabled = !bay.available;
+                      
+                      return (
+                        <button
+                          key={bay.id}
+                          onClick={() => !isDisabled && updateBooking('selectedBay', bay.id.toString())}
+                          disabled={isDisabled}
+                          className={`p-4 rounded-lg border-2 transition-all text-left relative ${
+                            isDisabled
+                              ? 'bg-red-500/10 border-red-500/30 cursor-not-allowed opacity-50'
+                              : bookingData.selectedBay === bay.id.toString()
+                                ? 'bg-brand-yellow/10 border-brand-yellow shadow-[0_0_24px_rgba(255,215,0,0.2)]'
+                                : 'bg-brand-raised border-brand-border hover:border-brand-yellow/50'
+                          }`}
+                        >
+                          {/* Bay Header */}
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <h3 className={`font-bold text-lg ${
+                                isDisabled ? 'text-red-400/50' : bookingData.selectedBay === bay.id.toString() ? 'text-brand-yellow' : 'text-white'
+                              }`}>
+                                {bay.name}
+                              </h3>
+                              <p className="text-xs text-brand-textMuted">{bay.type}</p>
+                            </div>
+                            
+                            {/* Status Badge */}
+                            {bay.available ? (
+                              <span className="bg-green-500/20 text-green-400 text-xs font-bold px-2 py-1 rounded-full">
+                                Available
+                              </span>
+                            ) : (
+                              <span className="bg-red-500/20 text-red-400 text-xs font-bold px-2 py-1 rounded-full">
+                                Occupied
+                              </span>
+                            )}
+                          </div>
+                          
+                          {/* Selected Checkmark */}
+                          {bookingData.selectedBay === bay.id.toString() && (
+                            <div className="absolute top-4 right-4">
+                              <svg className="w-6 h-6 text-brand-yellow" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                
+                {/* Error Message */}
+                {formErrors.selectedBay && (
+                  <p className="mt-3 text-red-400 text-sm">{formErrors.selectedBay}</p>
+                )}
+              </div>
+
+              <div className="flex justify-between mt-6">
+                <button
+                  onClick={prevStep}
+                  className="px-6 py-3 rounded-md font-display font-bold uppercase tracking-wider text-brand-textMuted border border-brand-border hover:border-brand-yellow hover:text-white transition-all"
+                >
+                  ← Back
+                </button>
+                <button
+                  onClick={nextStep}
+                  disabled={!isStepValid()}
+                  className={`px-8 py-3 rounded-md font-display font-bold uppercase tracking-wider transition-all ${
+                    isStepValid()
+                      ? 'bg-brand-yellow text-black hover:bg-yellow-400'
+                      : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
                   Next: Your Info →
                 </button>
               </div>
             </div>
           )}
 
-          {/* STEP 5: Customer Details */}
-          {currentStep === 5 && (
+          {/* STEP 6: Customer Details */}
+          {currentStep === 6 && (
             <div className="animate-fade-up">
               <h2 className="text-2xl font-display font-bold uppercase text-white mb-2">Your Information</h2>
               <p className="text-brand-textMuted text-sm mb-6">We'll use these details to confirm and contact you about your appointment.</p>
@@ -1236,8 +1419,8 @@ function BookingPage() {
             </div>
           )}
 
-          {/* STEP 6: Review & Confirm */}
-          {currentStep === 6 && (
+          {/* STEP 7: Review & Confirm */}
+          {currentStep === 7 && (
             <div className="animate-fade-up">
               <h2 className="text-2xl font-display font-bold uppercase text-white mb-2">Review & Confirm</h2>
               <p className="text-brand-textMuted text-sm mb-6">Please review your booking details before confirming.</p>

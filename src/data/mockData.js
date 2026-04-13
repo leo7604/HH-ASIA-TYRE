@@ -183,7 +183,12 @@ export const locations = [
     mapUrl: "https://www.google.com/maps/dir/?api=1&destination=Alabang-Zapote+Rd+Las+Piñas+City+Metro+Manila",
     image: "/images/alabang_branch_card.jpg",
     rating: 4.8,
-    reviewCount: 342
+    reviewCount: 342,
+    serviceBays: [
+      { id: 1, name: "Bay 1", type: "General Service", available: true },
+      { id: 2, name: "Bay 2", type: "Tire Service", available: true },
+      { id: 3, name: "Bay 3", type: "Oil & Lube", available: true }
+    ]
   },
   {
     id: 2,
@@ -199,7 +204,11 @@ export const locations = [
     mapUrl: "https://www.google.com/maps/dir/?api=1&destination=118+Doña+Soledad+Avenue+Don+Bosco+Parañaque+City",
     image: "/images/bicutan_branchj_card.jpg",
     rating: 4.6,
-    reviewCount: 218
+    reviewCount: 218,
+    serviceBays: [
+      { id: 1, name: "Bay 1", type: "General Service", available: true },
+      { id: 2, name: "Bay 2", type: "Tire Service", available: true }
+    ]
   },
   {
     id: 3,
@@ -215,7 +224,12 @@ export const locations = [
     mapUrl: "https://www.google.com/maps/dir/?api=1&destination=Aguinaldo+Highway+Nlog+II+4102+Bacoor+Cavite",
     image: "/images/bacoor_branch_card.jpg",
     rating: 4.7,
-    reviewCount: 289
+    reviewCount: 289,
+    serviceBays: [
+      { id: 1, name: "Bay 1", type: "General Service", available: true },
+      { id: 2, name: "Bay 2", type: "Oil & Lube", available: true },
+      { id: 3, name: "Bay 3", type: "Tire Service", available: true }
+    ]
   },
   {
     id: 4,
@@ -231,7 +245,11 @@ export const locations = [
     mapUrl: "https://www.google.com/maps/dir/?api=1&destination=8277+Dr+A+Santos+Avenue+San+Isidro+Parañaque",
     image: "/images/sucat_branch_card.png",
     rating: 4.5,
-    reviewCount: 195
+    reviewCount: 195,
+    serviceBays: [
+      { id: 1, name: "Bay 1", type: "General Service", available: true },
+      { id: 2, name: "Bay 2", type: "Tire Service", available: true }
+    ]
   },
   {
     id: 5,
@@ -247,7 +265,11 @@ export const locations = [
     mapUrl: "https://www.google.com/maps/dir/?api=1&destination=8277+Dr+A+Santos+Avenue+San+Isidro+Parañaque",
     image: "/images/sucat2_branch_card.png",
     rating: 4.6,
-    reviewCount: 167
+    reviewCount: 167,
+    serviceBays: [
+      { id: 1, name: "Bay 1", type: "General Service", available: true },
+      { id: 2, name: "Bay 2", type: "Tire Service", available: true }
+    ]
   },
   {
     id: 6,
@@ -263,7 +285,13 @@ export const locations = [
     mapUrl: "https://www.google.com/maps/dir/?api=1&destination=18.206733865804356,120.60029019113064",
     image: "/images/laoag_branch card.jpg",
     rating: 4.9,
-    reviewCount: 412
+    reviewCount: 412,
+    serviceBays: [
+      { id: 1, name: "Bay 1", type: "General Service", available: true },
+      { id: 2, name: "Bay 2", type: "Tire Service", available: true },
+      { id: 3, name: "Bay 3", type: "Oil & Lube", available: true },
+      { id: 4, name: "Bay 4", type: "Brake Service", available: true }
+    ]
   }
 ];
 

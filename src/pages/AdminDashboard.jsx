@@ -111,21 +111,35 @@ function AdminDashboard() {
   };
 
   const updateAppointmentStatus = (appointmentId, newStatus) => {
+    console.log('Updating appointment status:', { appointmentId, newStatus });
+    
     const allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
-    const updated = allAppointments.map(apt => 
-      apt.id === appointmentId ? { ...apt, status: newStatus } : apt
-    );
+    console.log('Total appointments before update:', allAppointments.length);
+    
+    const updated = allAppointments.map(apt => {
+      if (apt.id === appointmentId) {
+        console.log('Found appointment to update:', apt);
+        return { ...apt, status: newStatus };
+      }
+      return apt;
+    });
+    
+    console.log('Total appointments after update:', updated.length);
+    console.log('Updated appointment:', updated.find(apt => apt.id === appointmentId));
+    
     localStorage.setItem('appointments', JSON.stringify(updated));
     setAppointments(updated);
   };
 
   const approveAppointment = (id) => {
     updateAppointmentStatus(id, 'approved');
+    setFilter('all'); // Switch to 'all' filter to show the approved appointment
     toast.success('Appointment approved successfully!');
   };
 
   const rejectAppointment = (id) => {
     updateAppointmentStatus(id, 'rejected');
+    setFilter('all'); // Switch to 'all' filter to show the rejected appointment
     toast.warning('Appointment rejected');
   };
 

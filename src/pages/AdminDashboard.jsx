@@ -198,6 +198,58 @@ function AdminDashboard() {
     toast.warning('Appointment rejected');
   };
 
+  const retrySyncToDatabase = async (id) => {
+    const allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+    const appointment = allAppointments.find(apt => apt.id === id);
+    
+    if (!appointment) {
+      toast.error('Appointment not found');
+      return;
+    }
+    
+    try {
+      const apiPayload = {
+        customerName: appointment.customerName,
+        phone: appointment.phone,
+        email: appointment.email,
+        serviceType: appointment.services?.join(', ') || '',
+        vehicleMake: appointment.vehicleMake,
+        vehicleModel: appointment.vehicleModel,
+        vehicleYear: appointment.vehicleYear,
+        plateNumber: appointment.plateNumber,
+        preferredDate: appointment.date,
+        preferredTime: appointment.time,
+        branch: 'MNL',
+        notes: appointment.notes || '',
+        status: appointment.status,
+        bayId: appointment.bayId || null,
+        bayName: appointment.bayName || null,
+      };
+      
+      const response = await fetch('https://hh-asia-tyre-crm-inv-sys.vercel.app/api/public/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(apiPayload),
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        const updated = allAppointments.map(apt => 
+          apt.id === id ? { ...apt, apiBookingId: result.data?.id, apiSuccess: true } : apt
+        );
+        localStorage.setItem('appointments', JSON.stringify(updated));
+        setAppointments(updated);
+        toast.success('Successfully synced to database!');
+      } else {
+        toast.error('Failed to sync: ' + (result.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Retry sync error:', error);
+      toast.error('Failed to sync. Please try again later.');
+    }
+  };
+
   const completeService = (id) => {
     const allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
     const updated = allAppointments.map(apt => {
@@ -429,6 +481,7 @@ function AdminDashboard() {
                     <th className="text-left px-6 py-4 text-xs font-bold uppercase tracking-wider text-brand-textMuted">Bay</th>
                     <th className="text-left px-6 py-4 text-xs font-bold uppercase tracking-wider text-brand-textMuted">Date & Time</th>
                     <th className="text-left px-6 py-4 text-xs font-bold uppercase tracking-wider text-brand-textMuted">Status</th>
+                    <th className="text-left px-6 py-4 text-xs font-bold uppercase tracking-wider text-brand-textMuted">DB Sync</th>
                     <th className="text-left px-6 py-4 text-xs font-bold uppercase tracking-wider text-brand-textMuted">Actions</th>
                   </tr>
                 </thead>
@@ -492,6 +545,48 @@ function AdminDashboard() {
                         </span>
                       </td>
                       <td className="px-6 py-4">
+                        {/* Database Sync Status */}
+                        {apt.apiSuccess === true ? (
+                          <div className="flex items-center gap-2" title={`Synced to database (ID: ${apt.apiBookingId || 'N/A'})`}>
+                            <div className="w-6 h-6 bg-green-500/20 rounded-full flex items-center justify-center">
+                              <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                            <div>
+                              <div className="text-green-400 text-xs font-semibold">Synced</div>
+                              <div className="text-brand-textDim text-[10px]">Database</div>
+                            </div>
+                          </div>
+                        ) : apt.apiSuccess === false ? (
+                          <div className="flex items-center gap-2" title="Failed to sync to database">
+                            <div className="w-6 h-6 bg-red-500/20 rounded-full flex items-center justify-center">
+                              <svg className="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                            <div>
+                              <div className="text-red-400 text-xs font-semibold">Failed</div>
+                              <div className="text-brand-textDim text-[10px]">Not synced</div>
+                            </div>
+                          </div>
+                        ) : apt.status === 'approved' || apt.status === 'completed' ? (
+                          <div className="flex items-center gap-2" title="Pending sync to database">
+                            <div className="w-6 h-6 bg-yellow-500/20 rounded-full flex items-center justify-center">
+                              <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                            <div>
+                              <div className="text-yellow-400 text-xs font-semibold">Pending</div>
+                              <div className="text-brand-textDim text-[10px]">Not synced</div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-brand-textDim text-xs">—</div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           {apt.status === 'pending' && (
                             <>
@@ -524,6 +619,18 @@ function AdminDashboard() {
                             <span className="text-blue-400 text-xs font-semibold px-3 py-1.5">
                               ✓ Service Done
                             </span>
+                          )}
+                          {apt.apiSuccess === false && (
+                            <button
+                              onClick={() => retrySyncToDatabase(apt.id)}
+                              className="bg-purple-500/20 border border-purple-500/40 text-purple-400 px-3 py-1.5 rounded text-xs font-bold uppercase hover:bg-purple-500/30 transition-colors flex items-center gap-1"
+                              title="Retry sending to database"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                              </svg>
+                              Retry Sync
+                            </button>
                           )}
                           <button
                             onClick={() => startEditing(apt)}

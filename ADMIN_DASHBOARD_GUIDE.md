@@ -329,7 +329,7 @@ Admin logs into dashboard
 
 1. **Check dashboard daily** - Review new bookings promptly
 2. **Respond quickly** - Approve/reject within 24 hours
-3. **Add notes** - Document special requests or issues
+3. **Add notes** - Document customer concerns or issues
 4. **Keep schedule updated** - Edit dates if conflicts arise
 5. **Logout when done** - Especially on shared computers
 

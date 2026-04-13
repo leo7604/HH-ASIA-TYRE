@@ -1206,12 +1206,12 @@ function BookingPage() {
 
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-2">
-                    Special Requests (Optional)
+                    Customer Concern (Optional)
                   </label>
                   <textarea
                     value={bookingData.specialRequests}
                     onChange={(e) => updateBooking('specialRequests', e.target.value)}
-                    placeholder="Any specific concerns or requests..."
+                    placeholder="Describe your vehicle issues or concerns..."
                     rows={3}
                     className="w-full px-4 py-3 rounded-md bg-brand-raised border border-brand-border text-white focus:outline-none focus:border-brand-yellow transition-colors resize-none"
                   />
@@ -1375,7 +1375,7 @@ function BookingPage() {
                       </div>
                       {bookingData.specialRequests && (
                         <div className="mt-3 pt-3 border-t border-brand-border">
-                          <p className="text-brand-textDim text-xs font-bold uppercase mb-1">Special Requests:</p>
+                          <p className="text-brand-textDim text-xs font-bold uppercase mb-1">Customer Concern:</p>
                           <p className="text-brand-textMuted text-sm">{bookingData.specialRequests}</p>
                         </div>
                       )}

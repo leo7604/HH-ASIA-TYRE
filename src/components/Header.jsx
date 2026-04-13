@@ -1,10 +1,62 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { services, locations } from '../data/mockData';
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallButton, setShowInstallButton] = useState(false);
+
+  useEffect(() => {
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      return; // Already installed, don't show button
+    }
+
+    // Check if user dismissed the install prompt
+    const dismissed = localStorage.getItem('pwa-install-dismissed');
+    if (dismissed) {
+      const dismissedTime = parseInt(dismissed);
+      const daysSinceDismissed = (Date.now() - dismissedTime) / (1000 * 60 * 60 * 24);
+      if (daysSinceDismissed < 7) {
+        return; // Don't show for 7 days after dismissal
+      }
+    }
+
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallButton(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+
+    if (outcome === 'accepted') {
+      setShowInstallButton(false);
+      setDeferredPrompt(null);
+    } else {
+      // User dismissed, don't show for 7 days
+      localStorage.setItem('pwa-install-dismissed', Date.now().toString());
+      setShowInstallButton(false);
+    }
+  };
+
+  const handleDismissInstall = () => {
+    localStorage.setItem('pwa-install-dismissed', Date.now().toString());
+    setShowInstallButton(false);
+  };
 
   return (
     <header className="bg-brand-black/88 backdrop-blur-md sticky top-0 z-50 border-b border-brand-border">
@@ -130,6 +182,31 @@ function Header() {
 
         {/* Right Side Actions */}
         <div className="flex items-center gap-3">
+          {/* PWA Install Button */}
+          {showInstallButton && deferredPrompt && (
+            <div className="hidden md:flex items-center gap-2">
+              <button
+                onClick={handleInstallClick}
+                className="flex items-center gap-2 bg-white/10 text-white px-4 py-2.5 rounded-md font-display font-semibold text-sm tracking-wide hover:bg-white/20 transition-all border border-white/20 hover:border-brand-yellow"
+                title="Install HH Asia Tyre App"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H8l4-4 4 4h-3v4h-2z"/>
+                </svg>
+                <span>Install App</span>
+              </button>
+              <button
+                onClick={handleDismissInstall}
+                className="text-brand-textMuted hover:text-white p-1 transition-colors"
+                title="Dismiss"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+          )}
+
           {/* CTA Button */}
           <Link
             to="/book"
@@ -204,6 +281,20 @@ function Header() {
           <a href="#gallery" className="block py-3 text-brand-textMuted hover:text-white font-medium">Gallery</a>
           <a href="#about" className="block py-3 text-brand-textMuted hover:text-white font-medium">About</a>
           <a href="#contact" className="block py-3 text-brand-textMuted hover:text-white font-medium">Contact</a>
+          
+          {/* Mobile PWA Install Button */}
+          {showInstallButton && deferredPrompt && (
+            <button
+              onClick={handleInstallClick}
+              className="flex items-center justify-center gap-2 mt-4 bg-white/10 text-white px-6 py-3 rounded-md font-display font-semibold uppercase tracking-wider border border-white/20 hover:bg-white/20 transition-all"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H8l4-4 4 4h-3v4h-2z"/>
+              </svg>
+              <span>Install App</span>
+            </button>
+          )}
+          
           <Link
             to="/book"
             className="block mt-4 bg-brand-yellow text-black text-center px-6 py-3 rounded-md font-display font-bold uppercase tracking-wider"

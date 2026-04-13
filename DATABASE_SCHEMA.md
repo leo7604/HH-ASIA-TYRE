@@ -129,7 +129,7 @@ CREATE TABLE bookings (
     other_services TEXT,
     
     -- Notes
-    special_requests TEXT,
+    customer_concern TEXT,
     admin_notes TEXT,
     
     -- Tracking
@@ -280,7 +280,7 @@ If using MongoDB, here's the document structure:
   
   services: ["Tire Rotation", "Oil Change"],
   otherServices: "Check brake pads",
-  specialRequests: "Please check tire pressure",
+  customerConcern: "Please check tire pressure",
   
   source: "website",
   howDidYouHear: "Facebook",

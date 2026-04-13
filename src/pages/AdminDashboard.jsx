@@ -57,7 +57,7 @@ function AdminDashboard() {
           date: '2026-04-06',
           time: '2:00 PM',
           mileage: 65000,
-          notes: 'Customer requested early service',
+          notes: 'Customer concerned about brake noise, needs early service',
           status: 'approved',
           createdAt: new Date().toISOString()
         },

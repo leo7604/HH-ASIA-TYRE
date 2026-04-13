@@ -1,8 +1,64 @@
 import { useLocation, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 function ConfirmationPage() {
   const location = useLocation();
   const { bookingData, apiResponse, apiSuccess } = location.state || {};
+  const [showPWAInstall, setShowPWAInstall] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  // Setup PWA install after booking confirmation
+  useEffect(() => {
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      return;
+    }
+
+    // Check if user dismissed
+    const dismissed = localStorage.getItem('pwa-install-dismissed');
+    if (dismissed) {
+      const dismissedTime = parseInt(dismissed);
+      const daysSinceDismissed = (Date.now() - dismissedTime) / (1000 * 60 * 60 * 24);
+      if (daysSinceDismissed < 7) {
+        return;
+      }
+    }
+
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      // Show install button after 2 seconds (let user see confirmation first)
+      setTimeout(() => {
+        setShowPWAInstall(true);
+      }, 2000);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+
+    if (outcome === 'accepted') {
+      setShowPWAInstall(false);
+      setDeferredPrompt(null);
+    } else {
+      localStorage.setItem('pwa-install-dismissed', Date.now().toString());
+      setShowPWAInstall(false);
+    }
+  };
+
+  const handleDismissInstall = () => {
+    localStorage.setItem('pwa-install-dismissed', Date.now().toString());
+    setShowPWAInstall(false);
+  };
 
   // Use confirmation number from API response, or generate fallback
   const confirmationNumber = apiResponse?.data?.confirmationNumber || `HH${Date.now().toString().slice(-8)}`;
@@ -152,6 +208,47 @@ function ConfirmationPage() {
         <p className="mt-4 text-center text-xs text-gray-400">
           Booked on {bookingDate}
         </p>
+
+        {/* PWA Install Banner - Shows after booking */}
+        {showPWAInstall && deferredPrompt && (
+          <div className="mt-8 bg-gradient-to-r from-brand-yellow to-yellow-400 rounded-xl shadow-lg p-6 animate-fade-up">
+            <div className="flex items-start gap-4">
+              <div className="w-14 h-14 bg-black rounded-xl flex items-center justify-center flex-shrink-0">
+                <svg className="w-8 h-8 text-brand-yellow" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H8l4-4 4 4h-3v4h-2z"/>
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-lg text-brand-black mb-1">Install HH Asia Tyre App</h3>
+                <p className="text-sm text-gray-700 mb-3">
+                  Get quick access to your bookings, exclusive deals, and appointment reminders!
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleInstallClick}
+                    className="flex-1 bg-brand-black text-brand-yellow py-3 px-6 rounded-md font-bold uppercase tracking-wider hover:bg-gray-800 transition-all shadow-md hover:shadow-lg"
+                  >
+                    Install App
+                  </button>
+                  <button
+                    onClick={handleDismissInstall}
+                    className="px-6 py-3 text-gray-600 hover:text-brand-black font-semibold transition-colors"
+                  >
+                    Maybe Later
+                  </button>
+                </div>
+              </div>
+              <button
+                onClick={handleDismissInstall}
+                className="text-gray-600 hover:text-brand-black p-1"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

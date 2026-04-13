@@ -143,6 +143,24 @@ function AdminDashboard() {
     toast.warning('Appointment rejected');
   };
 
+  const completeService = (id) => {
+    const allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+    const updated = allAppointments.map(apt => {
+      if (apt.id === id) {
+        return { 
+          ...apt, 
+          status: 'completed',
+          completedAt: new Date().toISOString()
+        };
+      }
+      return apt;
+    });
+    localStorage.setItem('appointments', JSON.stringify(updated));
+    setAppointments(updated);
+    setFilter('all');
+    toast.success('Service completed! Bay is now available.');
+  };
+
   const startEditing = (appointment) => {
     setEditingAppointment(appointment.id);
     setEditForm({
@@ -179,6 +197,7 @@ function AdminDashboard() {
     total: appointments.length,
     pending: appointments.filter(a => a.status === 'pending').length,
     approved: appointments.filter(a => a.status === 'approved').length,
+    completed: appointments.filter(a => a.status === 'completed').length,
     rejected: appointments.filter(a => a.status === 'rejected').length
   };
 
@@ -251,7 +270,7 @@ function AdminDashboard() {
 
       <main className="max-w-[1400px] mx-auto px-6 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <div className="bg-brand-card border border-brand-border rounded-xl p-6">
             <div className="text-3xl font-display font-black text-white mb-1">{stats.total}</div>
             <div className="text-xs text-brand-textMuted uppercase tracking-wider">Total Appointments</div>
@@ -265,6 +284,10 @@ function AdminDashboard() {
             <div className="text-xs text-brand-textMuted uppercase tracking-wider">Approved</div>
           </div>
           <div className="bg-brand-card border border-brand-border rounded-xl p-6">
+            <div className="text-3xl font-display font-black text-blue-400 mb-1">{stats.completed}</div>
+            <div className="text-xs text-brand-textMuted uppercase tracking-wider">Completed</div>
+          </div>
+          <div className="bg-brand-card border border-brand-border rounded-xl p-6">
             <div className="text-3xl font-display font-black text-red-400 mb-1">{stats.rejected}</div>
             <div className="text-xs text-brand-textMuted uppercase tracking-wider">Rejected</div>
           </div>
@@ -273,7 +296,7 @@ function AdminDashboard() {
         {/* Filters */}
         <div className="flex flex-wrap gap-2 mb-6 items-center justify-between">
           <div className="flex flex-wrap gap-2">
-            {['all', 'pending', 'approved', 'rejected'].map((status) => (
+            {['all', 'pending', 'approved', 'completed', 'rejected'].map((status) => (
               <button
                 key={status}
                 onClick={() => setFilter(status)}
@@ -348,6 +371,7 @@ function AdminDashboard() {
                     <th className="text-left px-6 py-4 text-xs font-bold uppercase tracking-wider text-brand-textMuted">Customer</th>
                     <th className="text-left px-6 py-4 text-xs font-bold uppercase tracking-wider text-brand-textMuted">Vehicle</th>
                     <th className="text-left px-6 py-4 text-xs font-bold uppercase tracking-wider text-brand-textMuted">Service</th>
+                    <th className="text-left px-6 py-4 text-xs font-bold uppercase tracking-wider text-brand-textMuted">Bay</th>
                     <th className="text-left px-6 py-4 text-xs font-bold uppercase tracking-wider text-brand-textMuted">Date & Time</th>
                     <th className="text-left px-6 py-4 text-xs font-bold uppercase tracking-wider text-brand-textMuted">Status</th>
                     <th className="text-left px-6 py-4 text-xs font-bold uppercase tracking-wider text-brand-textMuted">Actions</th>
@@ -382,16 +406,34 @@ function AdminDashboard() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
+                        {apt.bayName ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-brand-yellow/10 border border-brand-yellow/30 rounded-lg flex items-center justify-center">
+                              <svg className="w-4 h-4 text-brand-yellow" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zm1 14a1 1 0 100-2 1 1 0 000 2zm5-1.757l4.9-4.9a2 2 0 000-2.828L13.485 5.1a2 2 0 00-2.828 0L10 5.757v8.486zM16 18.707a1 1 0 01-1.414 0L12 16.12V14h2.12l2.586 2.586a1 1 0 010 1.414z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                            <div>
+                              <div className="text-white font-semibold text-sm">{apt.bayName}</div>
+                              <div className="text-xs text-brand-textDim">Bay #{apt.bayId}</div>
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-brand-textDim text-xs">No bay assigned</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
                         <div className="text-white">{apt.date}</div>
                         <div className="text-sm text-brand-textMuted">{apt.time}</div>
                       </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase ${
                           apt.status === 'approved' ? 'bg-green-500/20 text-green-400 border border-green-500/40' :
+                          apt.status === 'completed' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' :
                           apt.status === 'rejected' ? 'bg-red-500/20 text-red-400 border border-red-500/40' :
                           'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40'
                         }`}>
-                          {apt.status}
+                          {apt.status === 'completed' ? '✓ Completed' : apt.status}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -411,6 +453,22 @@ function AdminDashboard() {
                                 Reject
                               </button>
                             </>
+                          )}
+                          {apt.status === 'approved' && (
+                            <button
+                              onClick={() => completeService(apt.id)}
+                              className="bg-blue-500/20 border border-blue-500/40 text-blue-400 px-3 py-1.5 rounded text-xs font-bold uppercase hover:bg-blue-500/30 transition-colors flex items-center gap-1"
+                            >
+                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                              Complete Service
+                            </button>
+                          )}
+                          {apt.status === 'completed' && (
+                            <span className="text-blue-400 text-xs font-semibold px-3 py-1.5">
+                              ✓ Service Done
+                            </span>
                           )}
                           <button
                             onClick={() => startEditing(apt)}

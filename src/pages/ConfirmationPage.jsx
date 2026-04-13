@@ -80,8 +80,8 @@ function ConfirmationPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h1 className="text-3xl font-bold mb-2">Booking Confirmed!</h1>
-            <p className="text-green-100">Your appointment has been scheduled successfully</p>
+            <h1 className="text-3xl font-bold mb-2">Booking Submitted!</h1>
+            <p className="text-green-100">Your appointment request has been sent to the branch for approval</p>
           </div>
 
           {/* Confirmation Details */}
@@ -151,22 +151,34 @@ function ConfirmationPage() {
             {/* Next Steps */}
             <div className="bg-gray-50 rounded-lg p-4 mb-6">
               <h3 className="font-semibold text-brand-black mb-3">What's Next?</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
+              <ul className="space-y-3 text-sm text-gray-600">
+                <li className="flex items-start gap-2">
+                  <span className="text-brand-yellow font-bold">1.</span>
+                  <span>Your booking request has been sent to the <strong>branch admin</strong> for review</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-brand-yellow font-bold">2.</span>
+                  <span>The branch admin will <strong>approve or reject</strong> your booking request</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-brand-yellow font-bold">3.</span>
+                  <span>You'll receive a confirmation once your booking is <strong>approved</strong></span>
+                </li>
                 {apiSuccess ? (
                   <>
                     <li className="flex items-start gap-2">
-                      <span className="text-brand-yellow">✓</span>
-                      <span>A confirmation email has been sent to {bookingData?.email}</span>
+                      <span className="text-green-500">✓</span>
+                      <span>A notification email has been sent to <strong>{bookingData?.email}</strong></span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-brand-yellow">✓</span>
-                      <span>You'll receive an SMS reminder 24 hours before your appointment</span>
+                      <span className="text-green-500">✓</span>
+                      <span>You'll receive an SMS reminder 24 hours before your appointment (once approved)</span>
                     </li>
                   </>
                 ) : (
                   <li className="flex items-start gap-2">
                     <span className="text-blue-500">ℹ</span>
-                    <span>Please contact us to confirm your booking details</span>
+                    <span>Please contact the branch directly to confirm your booking details</span>
                   </li>
                 )}
                 <li className="flex items-start gap-2">
@@ -178,6 +190,22 @@ function ConfirmationPage() {
                   <span>Bring your confirmation number for faster processing</span>
                 </li>
               </ul>
+            </div>
+
+            {/* Pending Status Notice */}
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <svg className="w-6 h-6 text-yellow-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <div>
+                  <p className="text-sm font-semibold text-yellow-800 mb-1">Booking Status: Pending Approval</p>
+                  <p className="text-xs text-yellow-700">
+                    Your booking request is currently <strong>pending</strong> and awaiting approval from the branch admin. 
+                    You will be notified once your booking is confirmed.
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Action Buttons */}

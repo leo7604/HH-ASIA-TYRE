@@ -39,7 +39,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - network first, fallback to cache (development mode)
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
@@ -48,35 +48,22 @@ self.addEventListener('fetch', (event) => {
   if (!event.request.url.startsWith(self.location.origin)) return;
 
   event.respondWith(
-    caches.match(event.request)
-      .then((cachedResponse) => {
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-
-        // Not in cache - fetch from network
-        return fetch(event.request).then((response) => {
-          // Check if we received a valid response
-          if (!response || response.status !== 200) {
-            return response;
-          }
-
-          // Clone the response
+    fetch(event.request)
+      .then((response) => {
+        // Cache successful responses
+        if (response && response.status === 200) {
           const responseToCache = response.clone();
-
           caches.open(CACHE_NAME)
             .then((cache) => {
               cache.put(event.request, responseToCache);
             });
-
-          return response;
-        }).catch(() => {
-          // If network fails, try offline page for document requests
-          if (event.request.destination === 'document') {
-            return caches.match('/offline.html');
-          }
-          // For images and other resources, return empty response
-          return new Response('', { status: 404, statusText: 'Not Found' });
+        }
+        return response;
+      })
+      .catch(() => {
+        // Fallback to cache only if network fails
+        return caches.match(event.request).then((cached) => {
+          return cached || new Response('', { status: 404, statusText: 'Not Found' });
         });
       })
   );

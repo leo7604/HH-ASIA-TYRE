@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { locations, vehicleMakes, timeSlots, services } from '../data/mockData';
 import Breadcrumbs from '../components/Breadcrumbs';
+import { MAX_BOOKINGS_PER_SLOT } from '../utils/bookingService';
 
 function BookingPage() {
   const navigate = useNavigate();
@@ -43,6 +44,8 @@ function BookingPage() {
   });
 
   const [formErrors, setFormErrors] = useState({});
+  const [slotAvailability, setSlotAvailability] = useState({});
+  const [checkingSlots, setCheckingSlots] = useState(false);
 
   // Filter branches by region
   const manilaBranches = locations.filter(l => l.city === 'Metro Manila' || l.city === 'Cavite');
@@ -81,7 +84,6 @@ function BookingPage() {
 
   const updateBooking = (field, value) => {
     setBookingData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
     if (formErrors[field]) {
       setFormErrors(prev => ({ ...prev, [field]: null }));
     }
@@ -142,10 +144,32 @@ function BookingPage() {
         if (!bookingData.selectedDate) {
           errors.selectedDate = 'Required';
           isValid = false;
+        } else {
+          const selectedDate = new Date(bookingData.selectedDate);
+          const phToday = getPhilippineToday();
+          
+          if (selectedDate < phToday) {
+            errors.selectedDate = 'Cannot book past dates. Please select today or a future date.';
+            isValid = false;
+          }
+          
+          if (selectedDate.getFullYear() < phToday.getFullYear() || selectedDate.getFullYear() > phToday.getFullYear() + 1) {
+            errors.selectedDate = `Please select a date in ${phToday.getFullYear()} or ${phToday.getFullYear() + 1}.`;
+            isValid = false;
+          }
         }
         if (!bookingData.selectedTime) {
           errors.selectedTime = 'Required';
           isValid = false;
+        } else {
+          const slotInfo = slotAvailability[bookingData.selectedTime];
+          if (slotInfo && !slotInfo.available) {
+            errors.selectedTime = 'This time slot is fully booked. Please select another time.';
+            isValid = false;
+          } else if (bookingData.selectedDate && isTimeSlotInPast(bookingData.selectedDate, bookingData.selectedTime)) {
+            errors.selectedTime = 'Cannot book a time that has already passed. Please select a future time.';
+            isValid = false;
+          }
         }
         break;
       case 5:
@@ -174,40 +198,55 @@ function BookingPage() {
     return isValid;
   };
 
-  // Branch ID to code mapping for API
   const branchCodeMap = {
-    1: 'MNL', // Goodyear High Performance Center - Alabang
-    2: 'MNL', // Goodyear Autocare Bicutan
-    3: 'MNL', // Goodyear Autocare Bacoor
-    4: 'MNL', // Goodyear Autocare Sucat
-    5: 'MNL', // Tire Asia - GT Radial Sucat
-    6: 'LAO', // Laoag branch (if added)
+    1: 'MNL',
+    2: 'MNL',
+    3: 'MNL',
+    4: 'MNL',
+    5: 'MNL',
+    6: 'LAO',
   };
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
     
     try {
-      // Validate date is not in the past or invalid year
+      const slotInfo = slotAvailability[bookingData.selectedTime];
+      if (slotInfo && !slotInfo.available) {
+        throw new Error('Sorry, this time slot was just booked. Please select another time.');
+      }
+      
+      // Check if selected time has already passed
+      if (isTimeSlotInPast(bookingData.selectedDate, bookingData.selectedTime)) {
+        throw new Error('Cannot book a time that has already passed. Please select a future date and time.');
+      }
+      
       const selectedDate = new Date(bookingData.selectedDate);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const phToday = getPhilippineToday();
       
-      if (selectedDate < today) {
-        throw new Error('Please select a future date');
+      if (selectedDate < phToday) {
+        throw new Error('Cannot book appointments in the past. Please select a future date.');
       }
       
-      if (selectedDate.getFullYear() < 2024 || selectedDate.getFullYear() > 2030) {
-        throw new Error('Please select a valid date');
+      const twoYearsAgo = new Date();
+      twoYearsAgo.setFullYear(phToday.getFullYear() - 2);
+      if (selectedDate < twoYearsAgo) {
+        throw new Error('Invalid date. Please select a valid future appointment date.');
       }
       
-      // Map branch ID to code
+      const sixMonthsFromNow = new Date();
+      sixMonthsFromNow.setMonth(phToday.getMonth() + 6);
+      if (selectedDate > sixMonthsFromNow) {
+        throw new Error('You can only book appointments up to 6 months in advance.');
+      }
+      
+      if (selectedDate.getFullYear() < phToday.getFullYear() || selectedDate.getFullYear() > phToday.getFullYear() + 1) {
+        throw new Error(`Please select a date in ${phToday.getFullYear()} or ${phToday.getFullYear() + 1}.`);
+      }
+      
       const branchCode = branchCodeMap[bookingData.selectedLocation] || 'MNL';
-      
-      // Format date as YYYY-MM-DD for API
       const formattedDate = selectedDate.toISOString().split('T')[0];
       
-      // Prepare API payload
       const apiPayload = {
         customerName: bookingData.fullName,
         phone: bookingData.phone,
@@ -227,12 +266,9 @@ function BookingPage() {
       let apiSuccess = false;
       
       try {
-        // Call the production API
         const response = await fetch('https://hh-asia-tyre-crm-inv-sys.vercel.app/api/public/bookings', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(apiPayload),
         });
         
@@ -249,7 +285,6 @@ function BookingPage() {
         console.warn('API unavailable, saving booking locally:', apiError.message);
       }
       
-      // Always save to localStorage as primary or fallback
       const appointment = {
         id: apiResponse?.data?.id || Date.now(),
         branchId: parseInt(bookingData.selectedLocation),
@@ -274,6 +309,16 @@ function BookingPage() {
       };
       
       const existingAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+      const currentSlotBookings = existingAppointments.filter(
+        apt => apt.branchId === appointment.branchId && 
+               apt.date === appointment.date && 
+               apt.time === appointment.time
+      ).length;
+      
+      if (currentSlotBookings >= MAX_BOOKINGS_PER_SLOT) {
+        throw new Error('This time slot just became fully booked. Please choose a different time.');
+      }
+      
       existingAppointments.push(appointment);
       localStorage.setItem('appointments', JSON.stringify(existingAppointments));
       
@@ -291,7 +336,6 @@ function BookingPage() {
     } catch (error) {
       console.error('Booking submission failed:', error);
       
-      // Even if there's an error, try to save locally
       const appointment = {
         id: Date.now(),
         branchId: parseInt(bookingData.selectedLocation),
@@ -316,10 +360,21 @@ function BookingPage() {
       };
       
       const existingAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+      const currentSlotBookings = existingAppointments.filter(
+        apt => apt.branchId === appointment.branchId && 
+               apt.date === appointment.date && 
+               apt.time === appointment.time
+      ).length;
+      
+      if (currentSlotBookings >= MAX_BOOKINGS_PER_SLOT) {
+        alert('Sorry, this time slot just became fully booked. Please choose a different time.');
+        setIsSubmitting(false);
+        return;
+      }
+      
       existingAppointments.push(appointment);
       localStorage.setItem('appointments', JSON.stringify(existingAppointments));
       
-      // Show success anyway since it's saved locally
       setShowSuccess(true);
       setTimeout(() => {
         navigate('/confirmation', { 
@@ -383,10 +438,97 @@ function BookingPage() {
 
   const stepSummary = getStepSummary();
 
-  // Get selected branch info
   const selectedBranch = bookingData.selectedLocation 
     ? locations.find(l => l.id === parseInt(bookingData.selectedLocation))
     : null;
+
+  // Helper: Get current date/time in Philippine timezone (Asia/Manila, UTC+8)
+  const getPhilippineTime = () => {
+    // Get current time in Philippine timezone
+    const now = new Date();
+    const philippineTimeStr = now.toLocaleString('en-US', { timeZone: 'Asia/Manila' });
+    return new Date(philippineTimeStr);
+  };
+
+  // Helper: Get today's date in Philippine timezone (start of day)
+  const getPhilippineToday = () => {
+    const phTime = getPhilippineTime();
+    const today = new Date(phTime);
+    today.setHours(0, 0, 0, 0);
+    return today;
+  };
+
+  // Helper: Check if a time slot is in the past for today (Philippine time)
+  const isTimeSlotInPast = (date, time) => {
+    const selectedDate = new Date(date);
+    const phNow = getPhilippineTime();
+    const phToday = getPhilippineToday();
+    
+    // Only check if the selected date is today (Philippine time)
+    const isToday = selectedDate.toDateString() === phToday.toDateString();
+    if (!isToday) return false;
+    
+    // Extract hours and minutes from time slot (e.g., "09:00 AM")
+    const match = time.match(/(\d{2}):(\d{2})\s(AM|PM)/i);
+    if (!match) return false;
+    
+    let hours = parseInt(match[1]);
+    const minutes = parseInt(match[2]);
+    const period = match[3].toUpperCase();
+    
+    // Convert to 24-hour format
+    if (period === 'PM' && hours !== 12) {
+      hours += 12;
+    } else if (period === 'AM' && hours === 12) {
+      hours = 0;
+    }
+    
+    // Create a date object for the time slot
+    const slotTime = new Date(selectedDate);
+    slotTime.setHours(hours, minutes, 0, 0);
+    
+    // If slot time is before current Philippine time, it's in the past
+    return slotTime < phNow;
+  };
+
+  // Check slot availability for selected branch and date
+  const fetchSlotAvailability = async (branchId, date) => {
+    if (!branchId || !date) return;
+    
+    setCheckingSlots(true);
+    
+    try {
+      const existingAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+      const bookingsForSlot = existingAppointments.filter(
+        apt => apt.branchId === parseInt(branchId) && apt.date === date
+      );
+      
+      const slotCounts = {};
+      timeSlots.forEach(slot => {
+        const count = bookingsForSlot.filter(apt => apt.time === slot).length;
+        slotCounts[slot] = {
+          available: count < MAX_BOOKINGS_PER_SLOT,
+          booked: count,
+          remaining: Math.max(0, MAX_BOOKINGS_PER_SLOT - count),
+          status: count === 0 ? 'available' : count < MAX_BOOKINGS_PER_SLOT ? 'limited' : 'full'
+        };
+      });
+      
+      setSlotAvailability(slotCounts);
+    } catch (error) {
+      console.error('Error checking slot availability:', error);
+    } finally {
+      setCheckingSlots(false);
+    }
+  };
+
+  useEffect(() => {
+    if (bookingData.selectedLocation && bookingData.selectedDate) {
+      fetchSlotAvailability(bookingData.selectedLocation, bookingData.selectedDate);
+    }
+  }, [bookingData.selectedLocation, bookingData.selectedDate]);
+
+  // Filter branches by region
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-brand-black to-brand-card">
@@ -852,6 +994,27 @@ function BookingPage() {
               <h2 className="text-2xl font-display font-bold uppercase text-white mb-2">Date & Time</h2>
               <p className="text-brand-textMuted text-sm mb-6">Select your preferred appointment date and time slot.</p>
               
+              {/* Availability Legend */}
+              {bookingData.selectedDate && bookingData.selectedLocation && (
+                <div className="mb-4 p-3 bg-brand-raised border border-brand-border rounded-lg">
+                  <p className="text-xs font-bold uppercase text-brand-textMuted mb-2">Slot Availability:</p>
+                  <div className="flex flex-wrap gap-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      <span className="text-xs text-brand-textMuted">Available</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                      <span className="text-xs text-brand-textMuted">Limited</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-red-500 rounded-full opacity-50"></div>
+                      <span className="text-xs text-brand-textMuted">Fully Booked</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               <div className="mb-6">
                 <label className="block text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-2">
                   Select Date <span className="text-brand-yellow">*</span>
@@ -860,30 +1023,77 @@ function BookingPage() {
                   type="date"
                   value={bookingData.selectedDate}
                   onChange={(e) => updateBooking('selectedDate', e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
+                  min={(() => {
+                    const phToday = getPhilippineToday();
+                    return phToday.toISOString().split('T')[0];
+                  })()}
+                  max={(() => {
+                    const phMaxDate = getPhilippineTime();
+                    phMaxDate.setMonth(phMaxDate.getMonth() + 6);
+                    return phMaxDate.toISOString().split('T')[0];
+                  })()}
                   className="w-full px-4 py-3 rounded-md bg-brand-raised border border-brand-border text-white focus:outline-none focus:border-brand-yellow"
                 />
+                <p className="mt-1 text-xs text-brand-textDim">
+                  Bookings available from today up to 6 months in advance
+                </p>
               </div>
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-3">
-                  Available Time Slots
+                  Available Time Slots {checkingSlots && <span className="text-brand-yellow text-xs">(Checking availability...)</span>}
                 </label>
                 <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
-                  {timeSlots.map((time) => (
-                    <button
-                      key={time}
-                      onClick={() => updateBooking('selectedTime', time)}
-                      className={`py-2 px-3 rounded-md text-sm font-medium transition-all ${
-                        bookingData.selectedTime === time
-                          ? 'bg-brand-yellow text-black'
-                          : 'bg-brand-raised text-brand-textMuted border border-brand-border hover:border-brand-yellow'
-                      }`}
-                    >
-                      {time}
-                    </button>
-                  ))}
+                  {timeSlots.map((time) => {
+                    const slotInfo = slotAvailability[time];
+                    const isFullyBooked = slotInfo && !slotInfo.available;
+                    const isLimited = slotInfo && slotInfo.status === 'limited';
+                    const isPastTime = bookingData.selectedDate && isTimeSlotInPast(bookingData.selectedDate, time);
+                    const isDisabled = isFullyBooked || isPastTime;
+                    
+                    return (
+                      <button
+                        key={time}
+                        onClick={() => !isDisabled && updateBooking('selectedTime', time)}
+                        disabled={isDisabled}
+                        className={`py-2 px-3 rounded-md text-sm font-medium transition-all relative ${
+                          isDisabled
+                            ? 'bg-red-500/10 text-red-400/50 cursor-not-allowed border border-red-500/30 line-through'
+                            : bookingData.selectedTime === time
+                              ? 'bg-brand-yellow text-black shadow-[0_0_12px_rgba(255,215,0,0.3)]'
+                              : isLimited
+                                ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/50 hover:border-yellow-400'
+                                : 'bg-brand-raised text-brand-textMuted border border-brand-border hover:border-brand-yellow'
+                        }`}
+                        title={isPastTime ? 'This time has already passed' : isFullyBooked ? 'Fully booked' : ''}
+                      >
+                        <div>{time}</div>
+                        {slotInfo && !isPastTime && (
+                          <div className="text-[0.65rem] mt-0.5 opacity-75">
+                            {isFullyBooked ? 'Full' : isLimited ? `${slotInfo.remaining} left` : 'Open'}
+                          </div>
+                        )}
+                        {isPastTime && (
+                          <div className="text-[0.65rem] mt-0.5 text-red-400">
+                            Past
+                          </div>
+                        )}
+                        {isLimited && !isFullyBooked && !isPastTime && (
+                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-500 rounded-full"></div>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
+                
+                {/* Selected slot info */}
+                {bookingData.selectedTime && slotAvailability[bookingData.selectedTime] && (
+                  <div className="mt-3 p-3 bg-brand-yellow/5 border border-brand-yellow/30 rounded-lg">
+                    <p className="text-xs text-brand-yellow">
+                      ✓ Selected: {bookingData.selectedTime} - {slotAvailability[bookingData.selectedTime].remaining} spots remaining
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-between mt-6">

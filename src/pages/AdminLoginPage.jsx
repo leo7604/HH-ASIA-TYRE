@@ -36,12 +36,21 @@ function AdminLoginPage() {
     }
 
     // Authentication for Branch Admin using localStorage
-    const admins = JSON.parse(localStorage.getItem('branchAdmins') || '[]');
+    // Check both possible keys for compatibility
+    const admins1 = JSON.parse(localStorage.getItem('branchAdmins') || '[]');
+    const admins2 = JSON.parse(localStorage.getItem('branch_admins') || '[]');
+    const admins = [...admins1, ...admins2];
     const admin = admins.find(a => a.email === formData.email && a.password === formData.password);
 
     if (admin) {
-      // Store session
-      localStorage.setItem('currentAdmin', JSON.stringify(admin));
+      // Get branch info
+      const branch = locations.find(l => l.id === admin.branchId);
+      
+      // Store session with branch info
+      localStorage.setItem('currentAdmin', JSON.stringify({
+        ...admin,
+        branchName: branch?.name || 'Unknown Branch'
+      }));
       navigate('/admin');
     } else {
       setError('Invalid email or password. Contact Super Admin for access.');
@@ -143,6 +152,13 @@ function AdminLoginPage() {
             <p className="text-brand-textMuted text-xs text-center mb-2 font-semibold uppercase">Super Admin Demo:</p>
             <p className="text-brand-textDim text-xs text-center font-mono">superadmin@hhasia.com</p>
             <p className="text-brand-textDim text-xs text-center font-mono">SuperAdmin2024!</p>
+            
+            <div className="border-t border-brand-border mt-3 pt-3">
+              <p className="text-brand-textMuted text-xs text-center mb-2 font-semibold uppercase">Branch Admin Demo:</p>
+              <p className="text-brand-textDim text-xs text-center font-mono">maria.santos@hhasia.com</p>
+              <p className="text-brand-textDim text-xs text-center font-mono">alabang2026</p>
+              <p className="text-brand-textDim text-xs text-center text-brand-yellow mt-1">(Alabang Branch)</p>
+            </div>
           </div>
         </div>
 

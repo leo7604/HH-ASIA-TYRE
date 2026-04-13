@@ -4,83 +4,48 @@ import { locations } from '../data/mockData';
 
 function AdminLoginPage() {
   const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    fullName: '',
-    phone: '',
-    branchId: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  // Filter only open branches
-  const availableBranches = locations.filter(l => l.status === 'open');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    if (isLogin) {
-      handleLogin();
-    } else {
-      handleSignup();
-    }
+    handleLogin();
     setLoading(false);
   };
 
   const handleLogin = () => {
-    // Authentication using localStorage
+    // Check Super Admin credentials
+    if (formData.email === 'superadmin@hhasia.com' && formData.password === 'SuperAdmin2024!') {
+      localStorage.setItem('currentAdmin', JSON.stringify({
+        id: 0,
+        fullName: 'Super Administrator',
+        email: 'superadmin@hhasia.com',
+        role: 'super_admin',
+        branchId: null,
+        branchName: 'All Branches'
+      }));
+      navigate('/super-admin');
+      return;
+    }
+
+    // Authentication for Branch Admin using localStorage
     const admins = JSON.parse(localStorage.getItem('branchAdmins') || '[]');
     const admin = admins.find(a => a.email === formData.email && a.password === formData.password);
 
     if (admin) {
       // Store session
       localStorage.setItem('currentAdmin', JSON.stringify(admin));
-      navigate('/admin/dashboard');
+      navigate('/admin');
     } else {
-      setError('Invalid email or password');
+      setError('Invalid email or password. Contact Super Admin for access.');
     }
-  };
-
-  const handleSignup = () => {
-    // Validation
-    if (!formData.branchId) {
-      setError('Please select a branch to manage');
-      return;
-    }
-
-    // Check if branch already has an admin
-    const admins = JSON.parse(localStorage.getItem('branchAdmins') || '[]');
-    const branchHasAdmin = admins.some(a => a.branchId === parseInt(formData.branchId));
-
-    if (branchHasAdmin) {
-      setError('This branch already has an admin assigned');
-      return;
-    }
-
-    // Create new admin
-    const branch = locations.find(l => l.id === parseInt(formData.branchId));
-    const newAdmin = {
-      id: Date.now(),
-      fullName: formData.fullName,
-      email: formData.email,
-      phone: formData.phone,
-      password: formData.password,
-      branchId: parseInt(formData.branchId),
-      branchName: branch?.name || 'Unknown Branch',
-      role: 'branch_admin',
-      createdAt: new Date().toISOString()
-    };
-
-    admins.push(newAdmin);
-    localStorage.setItem('branchAdmins', JSON.stringify(admins));
-    
-    // Auto login after signup
-    localStorage.setItem('currentAdmin', JSON.stringify(newAdmin));
-    navigate('/admin/dashboard');
   };
 
   return (
@@ -94,10 +59,10 @@ function AdminLoginPage() {
             </svg>
           </div>
           <h1 className="font-display font-black uppercase text-white text-2xl mb-2">
-            Branch Admin {isLogin ? 'Login' : 'Sign Up'}
+            Admin Login
           </h1>
           <p className="text-brand-textMuted text-sm">
-            {isLogin ? 'Access your branch dashboard' : 'Register as a branch administrator'}
+            Access your branch dashboard
           </p>
         </div>
 
@@ -109,61 +74,6 @@ function AdminLoginPage() {
               <div className="bg-red-500/10 border border-red-500/40 rounded-lg p-3 text-red-400 text-sm">
                 {error}
               </div>
-            )}
-
-            {/* Signup Fields */}
-            {!isLogin && (
-              <>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-2">
-                    Full Name <span className="text-brand-yellow">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.fullName}
-                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    placeholder="Juan Dela Cruz"
-                    className="w-full px-4 py-3 rounded-lg bg-brand-raised border border-brand-border text-white placeholder-brand-textDim focus:outline-none focus:border-brand-yellow transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-2">
-                    Phone Number <span className="text-brand-yellow">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="0917 123 4567"
-                    className="w-full px-4 py-3 rounded-lg bg-brand-raised border border-brand-border text-white placeholder-brand-textDim focus:outline-none focus:border-brand-yellow transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-2">
-                    Select Branch to Manage <span className="text-brand-yellow">*</span>
-                  </label>
-                  <select
-                    required
-                    value={formData.branchId}
-                    onChange={(e) => setFormData({ ...formData, branchId: e.target.value })}
-                    className="w-full px-4 py-3 rounded-lg bg-brand-raised border border-brand-border text-white focus:outline-none focus:border-brand-yellow transition-colors"
-                  >
-                    <option value="">Choose a branch...</option>
-                    {availableBranches.map(branch => (
-                      <option key={branch.id} value={branch.id}>
-                        {branch.name} - {branch.area}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="text-xs text-brand-textDim mt-1">
-                    Note: Each branch can only have one admin
-                  </p>
-                </div>
-              </>
             )}
 
             {/* Email Field */}
@@ -213,26 +123,26 @@ function AdminLoginPage() {
                   Processing...
                 </span>
               ) : (
-                isLogin ? 'Sign In' : 'Create Account'
+                'Sign In'
               )}
             </button>
           </form>
 
-          {/* Toggle Login/Signup */}
-          <div className="mt-6 pt-6 border-t border-brand-border text-center">
-            <p className="text-brand-textMuted text-sm">
-              {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
-              <button
-                onClick={() => {
-                  setIsLogin(!isLogin);
-                  setError('');
-                  setFormData({ email: '', password: '', fullName: '', phone: '', branchId: '' });
-                }}
-                className="text-brand-yellow hover:underline font-semibold"
-              >
-                {isLogin ? 'Sign Up' : 'Sign In'}
-              </button>
-            </p>
+          {/* Help Text */}
+          <div className="mt-6 pt-6 border-t border-brand-border">
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 text-center">
+              <p className="text-blue-300 text-sm mb-2">Need Access?</p>
+              <p className="text-blue-200 text-xs">
+                Contact the Super Administrator to create your branch admin account
+              </p>
+            </div>
+          </div>
+
+          {/* Demo Credentials */}
+          <div className="mt-4 bg-brand-raised border border-brand-border rounded-lg p-4">
+            <p className="text-brand-textMuted text-xs text-center mb-2 font-semibold uppercase">Super Admin Demo:</p>
+            <p className="text-brand-textDim text-xs text-center font-mono">superadmin@hhasia.com</p>
+            <p className="text-brand-textDim text-xs text-center font-mono">SuperAdmin2024!</p>
           </div>
         </div>
 

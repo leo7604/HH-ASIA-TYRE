@@ -1,33 +1,57 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { locations } from '../data/mockData';
 import CalendarView from '../components/CalendarView';
 import { useToast } from '../components/ToastProvider';
 
 function AdminDashboard() {
+  const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
+  const [currentAdmin, setCurrentAdmin] = useState(null);
   const [filter, setFilter] = useState('all'); // all, pending, approved, rejected
   const [editingAppointment, setEditingAppointment] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [viewMode, setViewMode] = useState('list'); // list or calendar
   const toast = useToast();
   
-  // Get current branch (default to first open branch for demo)
-  const currentBranch = locations.find(l => l.id === 1) || locations[0];
-
+  // Check authentication and get current admin
   useEffect(() => {
-    loadAppointments();
-  }, []);
+    const admin = JSON.parse(localStorage.getItem('currentAdmin') || 'null');
+    
+    if (!admin) {
+      // Not logged in, redirect to login
+      navigate('/admin/login');
+      return;
+    }
+    
+    // Check if it's a branch admin (not super admin)
+    if (admin.role === 'branch_admin' && !admin.branchId) {
+      // Invalid branch admin, redirect to login
+      localStorage.removeItem('currentAdmin');
+      navigate('/admin/login');
+      return;
+    }
+    
+    setCurrentAdmin(admin);
+    loadAppointments(admin);
+  }, [navigate]);
 
-  const loadAppointments = () => {
-    // Load appointments from localStorage or use sample data
+  const loadAppointments = (admin) => {
+    // Load appointments from localStorage
     let allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+    
+    // Filter by branch if branch admin
+    if (admin.role === 'branch_admin') {
+      allAppointments = allAppointments.filter(apt => apt.branchId === admin.branchId);
+    }
     
     // If no appointments, create sample data for design
     if (allAppointments.length === 0) {
+      const branchId = admin.role === 'super_admin' ? 1 : admin.branchId;
       allAppointments = [
         {
           id: 1,
-          branchId: 1,
+          branchId: branchId,
           customerName: 'Juan Dela Cruz',
           email: 'juan@example.com',
           phone: '0917 123 4567',
@@ -45,7 +69,7 @@ function AdminDashboard() {
         },
         {
           id: 2,
-          branchId: 1,
+          branchId: branchId,
           customerName: 'Maria Santos',
           email: 'maria@example.com',
           phone: '0918 765 4321',
@@ -63,7 +87,7 @@ function AdminDashboard() {
         },
         {
           id: 3,
-          branchId: 1,
+          branchId: branchId,
           customerName: 'Pedro Reyes',
           email: 'pedro@example.com',
           phone: '0919 234 5678',
@@ -144,7 +168,23 @@ function AdminDashboard() {
     rejected: appointments.filter(a => a.status === 'rejected').length
   };
 
-  if (!appointments.length) return null;
+  if (!currentAdmin) {
+    return (
+      <div className="min-h-screen bg-brand-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin h-12 w-12 border-4 border-brand-yellow border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-brand-textMuted">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!appointments.length && appointments.length !== 0) return null;
+
+  // Get branch info for branch admin
+  const branchInfo = currentAdmin.role === 'branch_admin' 
+    ? locations.find(l => l.id === currentAdmin.branchId)
+    : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-brand-black to-brand-card">
@@ -154,21 +194,43 @@ function AdminDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="font-display font-black uppercase text-white text-xl">
-                Branch Admin Dashboard
+                {currentAdmin.role === 'super_admin' ? 'Super Admin Dashboard' : 'Branch Admin Dashboard'}
               </h1>
               <p className="text-brand-textMuted text-sm mt-1">
-                Managing: <span className="text-brand-yellow font-semibold">{currentBranch.name}</span> • {currentBranch.area}
+                {currentAdmin.role === 'super_admin' ? (
+                  <span className="text-brand-yellow font-semibold">All Branches</span>
+                ) : (
+                  <>
+                    Managing: <span className="text-brand-yellow font-semibold">{branchInfo?.name}</span> • {branchInfo?.area}
+                  </>
+                )}
+                {' • '}
+                <span className="text-white">{currentAdmin.fullName}</span>
               </p>
             </div>
-            <a
-              href="/"
-              className="inline-flex items-center gap-2 bg-brand-raised border border-brand-border text-white px-4 py-2 rounded-lg hover:border-brand-yellow transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Back to Site
-            </a>
+            <div className="flex items-center gap-3">
+              <a
+                href="/"
+                className="inline-flex items-center gap-2 bg-brand-raised border border-brand-border text-white px-4 py-2 rounded-lg hover:border-brand-yellow transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Site
+              </a>
+              <button
+                onClick={() => {
+                  localStorage.removeItem('currentAdmin');
+                  navigate('/admin/login');
+                }}
+                className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/40 text-red-400 px-4 py-2 rounded-lg hover:bg-red-500/20 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </header>

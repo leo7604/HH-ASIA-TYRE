@@ -150,7 +150,8 @@ function AdminDashboard() {
         customerName: appointment.customerName,
         phone: appointment.phone,
         email: appointment.email,
-        serviceType: appointment.services?.join(', ') || '',
+        service: appointment.services?.[0] || '',  // Primary service for Team B's auto-checkbox
+        serviceType: appointment.services?.join(', ') || '',  // All services for display
         vehicleMake: appointment.vehicleMake,
         vehicleModel: appointment.vehicleModel,
         vehicleYear: appointment.vehicleYear,
@@ -212,7 +213,8 @@ function AdminDashboard() {
         customerName: appointment.customerName,
         phone: appointment.phone,
         email: appointment.email,
-        serviceType: appointment.services?.join(', ') || '',
+        service: appointment.services?.[0] || '',  // Primary service for Team B's auto-checkbox
+        serviceType: appointment.services?.join(', ') || '',  // All services for display
         vehicleMake: appointment.vehicleMake,
         vehicleModel: appointment.vehicleModel,
         vehicleYear: appointment.vehicleYear,

@@ -262,7 +262,8 @@ function BookingPage() {
         customerName: bookingData.fullName,
         phone: bookingData.phone,
         email: bookingData.email,
-        serviceType: bookingData.selectedServices.join(', '),
+        service: bookingData.selectedServices[0] || '',  // Primary service for Team B's auto-checkbox
+        serviceType: bookingData.selectedServices.join(', '),  // All services for display
         vehicleMake: bookingData.vehicleMake,
         vehicleModel: bookingData.vehicleModel,
         vehicleYear: bookingData.vehicleYear,

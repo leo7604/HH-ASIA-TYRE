@@ -47,16 +47,28 @@ self.addEventListener('fetch', (event) => {
   // Skip cross-origin requests
   if (!event.request.url.startsWith(self.location.origin)) return;
 
+  // Skip Vite development files
+  if (event.request.url.includes('/@vite/') || 
+      event.request.url.includes('/@react-refresh') ||
+      event.request.url.includes('/src/') ||
+      event.request.url.includes('node_modules')) {
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Cache successful responses
+        // Only cache successful responses in production
         if (response && response.status === 200) {
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
+          // Don't cache development files
+          if (!event.request.url.includes('/@vite/') && 
+              !event.request.url.includes('/src/main.jsx')) {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME)
+              .then((cache) => {
+                cache.put(event.request, responseToCache);
+              });
+          }
         }
         return response;
       })

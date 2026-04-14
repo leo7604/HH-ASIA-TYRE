@@ -34,9 +34,9 @@ export const promotions = [
 export const services = [
   {
     id: 1,
-    name: "tires",
+    name: "Tire Installation",
     icon: "tyre",
-    description: "Premium tyre sales, installation, rotation, and repair services",
+    description: "Premium tyre sales and professional installation services",
     link: "/services/tires",
     category: "tires",
     duration: "1-2 hours",
@@ -44,6 +44,46 @@ export const services = [
   },
   {
     id: 2,
+    name: "Tire Rotation",
+    icon: "tyre",
+    description: "Rotate tires for even wear and extended tire life",
+    link: "/services/tire-rotation",
+    category: "tires",
+    duration: "30-45 min",
+    priceRange: "₱500 - ₱1,000"
+  },
+  {
+    id: 3,
+    name: "Wheel Alignment",
+    icon: "tyre",
+    description: "Precision wheel alignment for better handling and tire life",
+    link: "/services/wheel-alignment",
+    category: "tires",
+    duration: "45-60 min",
+    priceRange: "₱1,500 - ₱3,000"
+  },
+  {
+    id: 4,
+    name: "Wheel Balancing",
+    icon: "tyre",
+    description: "Balance wheels to eliminate vibration and ensure smooth ride",
+    link: "/services/wheel-balancing",
+    category: "tires",
+    duration: "30-45 min",
+    priceRange: "₱800 - ₱1,500"
+  },
+  {
+    id: 5,
+    name: "Brake Service",
+    icon: "brakes",
+    description: "Complete brake inspection, pad replacement, and fluid service",
+    link: "/services/brakes",
+    category: "auto-repair",
+    duration: "1-3 hours",
+    priceRange: "₱2,000 - ₱6,000"
+  },
+  {
+    id: 6,
     name: "Oil Change",
     icon: "oil",
     description: "Full synthetic, blend, and conventional oil change services",
@@ -53,8 +93,8 @@ export const services = [
     priceRange: "₱800 - ₱2,500"
   },
   {
-    id: 3,
-    name: "Batteries",
+    id: 7,
+    name: "Battery Replacement",
     icon: "battery",
     description: "Battery testing, replacement, and charging system diagnostics",
     link: "/services/batteries",
@@ -63,38 +103,8 @@ export const services = [
     priceRange: "₱3,500 - ₱8,000"
   },
   {
-    id: 4,
-    name: "Brakes",
-    icon: "brakes",
-    description: "Brake inspection, pad replacement, rotor service, and fluid flush",
-    link: "/services/brakes",
-    category: "auto-repair",
-    duration: "1-3 hours",
-    priceRange: "₱2,000 - ₱6,000"
-  },
-  {
-    id: 5,
-    name: "Clutch",
-    icon: "clutch",
-    description: "Clutch inspection, adjustment, and complete replacement services",
-    link: "/services/clutch",
-    category: "auto-repair",
-    duration: "3-5 hours",
-    priceRange: "₱8,000 - ₱15,000"
-  },
-  {
-    id: 6,
-    name: "Maintenance",
-    icon: "maintenance",
-    description: "Scheduled maintenance, tune-ups, and preventive care",
-    link: "/services/maintenance",
-    category: "maintenance",
-    duration: "1-2 hours",
-    priceRange: "₱1,500 - ₱5,000"
-  },
-  {
-    id: 7,
-    name: "Car Aircon",
+    id: 8,
+    name: "Aircon Service",
     icon: "aircon",
     description: "AC inspection, refrigerant recharge, and repair services",
     link: "/services/aircon",
@@ -103,8 +113,18 @@ export const services = [
     priceRange: "₱1,500 - ₱4,500"
   },
   {
-    id: 8,
-    name: "Suspension",
+    id: 9,
+    name: "Engine Tune-up",
+    icon: "maintenance",
+    description: "Complete engine tune-up for optimal performance and efficiency",
+    link: "/services/tune-up",
+    category: "maintenance",
+    duration: "1-2 hours",
+    priceRange: "₱2,000 - ₱5,000"
+  },
+  {
+    id: 10,
+    name: "Suspension Repair",
     icon: "suspension",
     description: "Shock, strut, and suspension system inspection and repair",
     link: "/services/suspension",
@@ -113,14 +133,54 @@ export const services = [
     priceRange: "₱3,000 - ₱12,000"
   },
   {
-    id: 9,
-    name: "Transmission",
-    icon: "transmission",
-    description: "Transmission fluid service, diagnostics, and repair",
-    link: "/services/transmission",
-    category: "auto-repair",
-    duration: "2-4 hours",
-    priceRange: "₱2,500 - ₱10,000"
+    id: 11,
+    name: "Puncture Repair",
+    icon: "tyre",
+    description: "Professional tire puncture repair and patching",
+    link: "/services/puncture-repair",
+    category: "tires",
+    duration: "30-45 min",
+    priceRange: "₱300 - ₱800"
+  },
+  {
+    id: 12,
+    name: "Nitrogen Inflation",
+    icon: "tyre",
+    description: "Nitrogen tire inflation for better pressure retention",
+    link: "/services/nitrogen",
+    category: "tires",
+    duration: "15-20 min",
+    priceRange: "₱200 - ₱500"
+  },
+  {
+    id: 13,
+    name: "TPMS Service",
+    icon: "tyre",
+    description: "Tire Pressure Monitoring System diagnostics and service",
+    link: "/services/tpms",
+    category: "tires",
+    duration: "30-45 min",
+    priceRange: "₱500 - ₱1,500"
+  },
+  {
+    id: 14,
+    name: "Multi-point Inspection",
+    icon: "maintenance",
+    description: "Comprehensive vehicle inspection covering all major systems",
+    link: "/services/inspection",
+    category: "maintenance",
+    duration: "45-60 min",
+    priceRange: "₱500 - ₱1,000"
+  },
+  {
+    id: 15,
+    name: "General Check-up",
+    icon: "maintenance",
+    description: "General vehicle health assessment and diagnostics",
+    link: "/services/checkup",
+    category: "maintenance",
+    duration: "30-60 min",
+    priceRange: "₱500 - ₱1,500"
   }
 ];
 

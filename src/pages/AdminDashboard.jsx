@@ -12,6 +12,8 @@ function AdminDashboard() {
   const [editingAppointment, setEditingAppointment] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [viewMode, setViewMode] = useState('list'); // list or calendar
+  const [bayStatuses, setBayStatuses] = useState({}); // Track manually closed bays
+  const [showBayManager, setShowBayManager] = useState(false); // Bay manager modal
   const toast = useToast();
   
   // Check authentication and get current admin
@@ -108,6 +110,42 @@ function AdminDashboard() {
     }
     
     setAppointments(allAppointments);
+  };
+
+  // Bay Management Functions
+  useEffect(() => {
+    // Load bay statuses from localStorage on mount
+    if (currentAdmin) {
+      const branchId = currentAdmin.branchId || 'all';
+      const savedBayStatuses = JSON.parse(localStorage.getItem(`bayStatuses_${branchId}`) || '{}');
+      setBayStatuses(savedBayStatuses);
+    }
+  }, [currentAdmin]);
+
+  const toggleBayStatus = (bayId) => {
+    const updatedStatuses = { ...bayStatuses };
+    if (updatedStatuses[bayId]) {
+      delete updatedStatuses[bayId]; // Remove = bay is open
+    } else {
+      updatedStatuses[bayId] = {
+        closed: true,
+        closedAt: new Date().toISOString(),
+        reason: 'Walk-in customer'
+      };
+    }
+    
+    setBayStatuses(updatedStatuses);
+    
+    // Save to localStorage
+    const branchId = currentAdmin.branchId || 'all';
+    localStorage.setItem(`bayStatuses_${branchId}`, JSON.stringify(updatedStatuses));
+    
+    const isClosed = !updatedStatuses[bayId];
+    toast.success(isClosed ? 'Bay closed for walk-in' : 'Bay reopened for bookings');
+  };
+
+  const isBayClosed = (bayId) => {
+    return bayStatuses[bayId] && bayStatuses[bayId].closed;
   };
 
   const updateAppointmentStatus = (appointmentId, newStatus) => {
@@ -351,6 +389,15 @@ function AdminDashboard() {
               </p>
             </div>
             <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowBayManager(!showBayManager)}
+                className="inline-flex items-center gap-2 bg-brand-yellow/10 border border-brand-yellow/40 text-brand-yellow px-4 py-2 rounded-lg hover:bg-brand-yellow/20 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                Manage Bays
+              </button>
               <a
                 href="/"
                 className="inline-flex items-center gap-2 bg-brand-raised border border-brand-border text-white px-4 py-2 rounded-lg hover:border-brand-yellow transition-colors"
@@ -713,6 +760,140 @@ function AdminDashboard() {
               >
                 Cancel
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bay Manager Modal */}
+      {showBayManager && currentAdmin && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+          <div className="bg-brand-card border border-brand-border rounded-2xl max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="p-6 border-b border-brand-border flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-display font-black text-white mb-1">Manage Service Bays</h2>
+                <p className="text-brand-textMuted text-sm">Close bays for walk-in customers or reopen for online bookings</p>
+              </div>
+              <button
+                onClick={() => setShowBayManager(false)}
+                className="text-brand-textMuted hover:text-white transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="p-6">
+              {(() => {
+                const branch = locations.find(l => l.id === (currentAdmin.branchId || 1));
+                if (!branch || !branch.serviceBays) {
+                  return <div className="text-brand-textMuted text-center py-8">No bays configured for this branch</div>;
+                }
+
+                const closedCount = branch.serviceBays.filter(bay => isBayClosed(bay.id)).length;
+                const openCount = branch.serviceBays.length - closedCount;
+
+                return (
+                  <>
+                    {/* Status Summary */}
+                    <div className="grid grid-cols-3 gap-4 mb-6">
+                      <div className="bg-brand-raised border border-brand-border rounded-lg p-4">
+                        <div className="text-2xl font-display font-black text-white">{branch.serviceBays.length}</div>
+                        <div className="text-xs text-brand-textMuted uppercase">Total Bays</div>
+                      </div>
+                      <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                        <div className="text-2xl font-display font-black text-green-400">{openCount}</div>
+                        <div className="text-xs text-brand-textMuted uppercase">Open</div>
+                      </div>
+                      <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                        <div className="text-2xl font-display font-black text-red-400">{closedCount}</div>
+                        <div className="text-xs text-brand-textMuted uppercase">Closed</div>
+                      </div>
+                    </div>
+
+                    {/* Bay List */}
+                    <div className="space-y-3">
+                      {branch.serviceBays.map((bay) => {
+                        const closed = isBayClosed(bay.id);
+                        return (
+                          <div
+                            key={bay.id}
+                            className={`border rounded-lg p-4 transition-all ${
+                              closed
+                                ? 'bg-red-500/10 border-red-500/40'
+                                : 'bg-brand-raised border-brand-border'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                                  closed
+                                    ? 'bg-red-500/20 border border-red-500/40'
+                                    : 'bg-green-500/20 border border-green-500/40'
+                                }`}>
+                                  <svg className={`w-6 h-6 ${closed ? 'text-red-400' : 'text-green-400'}`} fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zm1 14a1 1 0 100-2 1 1 0 000 2zm5-1.757l4.9-4.9a2 2 0 000-2.828L13.485 5.1a2 2 0 00-2.828 0L10 5.757v8.486zM16 18.707a1 1 0 01-1.414 0L12 16.12V14h2.12l2.586 2.586a1 1 0 010 1.414z" clipRule="evenodd" />
+                                  </svg>
+                                </div>
+                                <div>
+                                  <div className="text-white font-bold text-lg">{bay.name}</div>
+                                  <div className="text-brand-textMuted text-sm">{bay.type}</div>
+                                  {closed && bayStatuses[bay.id] && (
+                                    <div className="text-red-400 text-xs mt-1">
+                                      Closed since {new Date(bayStatuses[bay.id].closedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => toggleBayStatus(bay.id)}
+                                className={`px-6 py-3 rounded-lg font-bold uppercase text-sm transition-all ${
+                                  closed
+                                    ? 'bg-green-500/20 border border-green-500/40 text-green-400 hover:bg-green-500/30'
+                                    : 'bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30'
+                                }`}
+                              >
+                                {closed ? (
+                                  <>
+                                    <span className="flex items-center gap-2">
+                                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                      </svg>
+                                      Reopen Bay
+                                    </span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <span className="flex items-center gap-2">
+                                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                      </svg>
+                                      Close Bay
+                                    </span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Info Box */}
+                    <div className="mt-6 bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                      <div className="flex items-start gap-3">
+                        <svg className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                        <div className="text-sm text-blue-300">
+                          <strong className="text-blue-400">Note:</strong> Closed bays will not be available for online bookings. This is useful when handling walk-in customers or maintenance.
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>

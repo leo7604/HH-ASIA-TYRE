@@ -571,10 +571,17 @@ function BookingPage() {
       const bayCounts = {};
       branch.serviceBays.forEach(bay => {
         const count = bookingsForSlot.filter(apt => apt.bayId === bay.id).length;
+        
+        // Check if bay is manually closed by admin
+        const branchId = currentAdmin?.branchId || branchId;
+        const bayStatuses = JSON.parse(localStorage.getItem(`bayStatuses_${branchId}`) || '{}');
+        const isManuallyClosed = bayStatuses[bay.id] && bayStatuses[bay.id].closed;
+        
         bayCounts[bay.id] = {
           ...bay,
-          available: count === 0,
-          booked: count > 0
+          available: count === 0 && !isManuallyClosed,
+          booked: count > 0,
+          manuallyClosed: isManuallyClosed
         };
       });
       
@@ -1252,7 +1259,11 @@ function BookingPage() {
                             </div>
                             
                             {/* Status Badge */}
-                            {bay.available ? (
+                            {bay.manuallyClosed ? (
+                              <span className="bg-orange-500/20 text-orange-400 text-xs font-bold px-2 py-1 rounded-full">
+                                Closed for Walk-in
+                              </span>
+                            ) : bay.available ? (
                               <span className="bg-green-500/20 text-green-400 text-xs font-bold px-2 py-1 rounded-full">
                                 Available
                               </span>

@@ -337,6 +337,93 @@ function AdminDashboard() {
     setEditForm({});
   };
 
+  const deleteAppointment = (id) => {
+    if (!confirm('Are you sure you want to delete this booking? This action cannot be undone.')) {
+      return;
+    }
+    
+    const allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+    const updated = allAppointments.filter(apt => apt.id !== id);
+    localStorage.setItem('appointments', JSON.stringify(updated));
+    setAppointments(updated);
+    toast.success('Booking deleted successfully');
+  };
+
+  const exportToCSV = () => {
+    if (appointments.length === 0) {
+      toast.error('No bookings to export');
+      return;
+    }
+
+    // CSV Headers
+    const headers = [
+      'ID',
+      'Customer Name',
+      'Email',
+      'Phone',
+      'Vehicle Year',
+      'Vehicle Make',
+      'Vehicle Model',
+      'Plate Number',
+      'Services',
+      'Date',
+      'Time',
+      'Status',
+      'Bay ID',
+      'Bay Name',
+      'Notes',
+      'Created At',
+      'Completed At'
+    ];
+
+    // Convert appointments to CSV rows
+    const rows = appointments.map(apt => [
+      apt.id,
+      `"${apt.customerName || ''}"`,
+      `"${apt.email || ''}"`,
+      `"${apt.phone || ''}"`,
+      apt.vehicleYear || '',
+      `"${apt.vehicleMake || ''}"`,
+      `"${apt.vehicleModel || ''}"`,
+      `"${apt.plateNumber || ''}"`,
+      `"${(apt.services || []).join(', ')}"`,
+      apt.date || '',
+      apt.time || '',
+      apt.status || '',
+      apt.bayId || '',
+      `"${apt.bayName || ''}"`,
+      `"${(apt.notes || '').replace(/"/g, '""')}"`,
+      apt.createdAt || '',
+      apt.completedAt || ''
+    ]);
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    
+    // Generate filename with date
+    const today = new Date().toISOString().split('T')[0];
+    const branchName = currentAdmin.role === 'branch_admin' 
+      ? locations.find(l => l.id === currentAdmin.branchId)?.name.replace(/\s+/g, '_') || 'branch'
+      : 'all_branches';
+    
+    link.setAttribute('download', `bookings_${branchName}_${today}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success(`Exported ${appointments.length} bookings to CSV`);
+  };
+
   // Filter appointments
   const filteredAppointments = filter === 'all' 
     ? appointments 
@@ -392,6 +479,16 @@ function AdminDashboard() {
               </p>
             </div>
             <div className="flex items-center gap-3">
+              <button
+                onClick={exportToCSV}
+                className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/40 text-green-400 px-4 py-2 rounded-lg hover:bg-green-500/20 transition-colors"
+                title="Export bookings to CSV"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Export CSV
+              </button>
               <a
                 href="/"
                 className="inline-flex items-center gap-2 bg-brand-raised border border-brand-border text-white px-4 py-2 rounded-lg hover:border-brand-yellow transition-colors"
@@ -680,6 +777,16 @@ function AdminDashboard() {
                             className="bg-brand-raised border border-brand-border text-white px-3 py-1.5 rounded text-xs font-bold uppercase hover:border-brand-yellow transition-colors"
                           >
                             Edit
+                          </button>
+                          <button
+                            onClick={() => deleteAppointment(apt.id)}
+                            className="bg-red-500/20 border border-red-500/40 text-red-400 px-3 py-1.5 rounded text-xs font-bold uppercase hover:bg-red-500/30 transition-colors flex items-center gap-1"
+                            title="Delete this booking permanently"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-7V7a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Delete
                           </button>
                         </div>
                       </td>

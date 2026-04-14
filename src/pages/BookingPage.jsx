@@ -259,7 +259,7 @@ function BookingPage() {
         plateNumber: bookingData.plateNumber,
         preferredDate: formattedDate,
         preferredTime: bookingData.selectedTime,
-        branch: branchCode,
+        branchId: parseInt(bookingData.selectedLocation),  // Use branchId to match database schema
         notes: bookingData.specialRequests || '',
       };
       

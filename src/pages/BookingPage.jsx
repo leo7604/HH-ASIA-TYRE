@@ -573,7 +573,6 @@ function BookingPage() {
         const count = bookingsForSlot.filter(apt => apt.bayId === bay.id).length;
         
         // Check if bay is manually closed by admin
-        const branchId = currentAdmin?.branchId || branchId;
         const bayStatuses = JSON.parse(localStorage.getItem(`bayStatuses_${branchId}`) || '{}');
         const isManuallyClosed = bayStatuses[bay.id] && bayStatuses[bay.id].closed;
         

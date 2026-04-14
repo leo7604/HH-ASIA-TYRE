@@ -35,11 +35,7 @@ function BookingPage() {
     selectedDate: '',
     selectedTime: '',
 
-    // Step 5: Service Bay (OPTIONAL - can be assigned by admin later)
-    selectedBay: '',
-    bayPreference: 'no-preference', // 'no-preference' or specific bay ID
-
-    // Step 6: Customer Details
+    // Step 5: Customer Details (Bay assigned by admin during approval)
     fullName: '',
     email: '',
     phone: '',
@@ -50,8 +46,6 @@ function BookingPage() {
   const [formErrors, setFormErrors] = useState({});
   const [slotAvailability, setSlotAvailability] = useState({});
   const [checkingSlots, setCheckingSlots] = useState(false);
-  const [bayAvailability, setBayAvailability] = useState({});
-  const [checkingBays, setCheckingBays] = useState(false);
 
   // Filter branches by region
   const manilaBranches = locations.filter(l => l.city === 'Metro Manila' || l.city === 'Cavite');
@@ -178,11 +172,7 @@ function BookingPage() {
           }
         }
         break;
-      case 5:
-        // Bay selection is now OPTIONAL - admin can assign later
-        // No validation required, always valid
-        break;
-      case 6:
+      case 5: // Customer Details (was Step 6)
         if (!bookingData.fullName.trim()) {
           errors.fullName = 'Required';
           isValid = false;
@@ -299,8 +289,8 @@ function BookingPage() {
       const appointment = {
         id: apiResponse?.data?.id || Date.now(),
         branchId: parseInt(bookingData.selectedLocation),
-        bayId: bookingData.selectedBay ? parseInt(bookingData.selectedBay) : null,
-        bayName: bookingData.selectedBay ? (bayAvailability[bookingData.selectedBay]?.name || 'Unknown') : null,
+        bayId: null, // Bay will be assigned by admin during approval
+        bayName: null, // Bay will be assigned by admin during approval
         customerName: bookingData.fullName,
         email: bookingData.email,
         phone: bookingData.phone,
@@ -412,10 +402,8 @@ function BookingPage() {
       case 4:
         return bookingData.selectedDate && bookingData.selectedTime;
       case 5:
-        return true;  // Bay selection is optional - always valid
-      case 6:
         return bookingData.fullName && bookingData.email && bookingData.phone;
-      case 7:
+      case 6:
         return true;
       default:
         return false;
@@ -545,59 +533,6 @@ function BookingPage() {
     }
   }, [bookingData.selectedLocation, bookingData.selectedDate]);
 
-  // Check service bay availability for selected branch, date, and time
-  const fetchBayAvailability = async (branchId, date, time) => {
-    if (!branchId || !date || !time) return;
-    
-    setCheckingBays(true);
-    
-    try {
-      const branch = locations.find(l => l.id === parseInt(branchId));
-      if (!branch || !branch.serviceBays) {
-        setBayAvailability({});
-        return;
-      }
-      
-      const existingAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
-      const bookingsForSlot = existingAppointments.filter(
-        apt => apt.branchId === parseInt(branchId) && 
-               apt.date === date && 
-               apt.time === time &&
-               apt.status !== 'completed'  // Exclude completed bookings
-      );
-      
-      // Count bookings per bay
-      const bayCounts = {};
-      branch.serviceBays.forEach(bay => {
-        const count = bookingsForSlot.filter(apt => apt.bayId === bay.id).length;
-        
-        // Check if bay is manually closed by admin
-        const bayStatuses = JSON.parse(localStorage.getItem(`bayStatuses_${branchId}`) || '{}');
-        const isManuallyClosed = bayStatuses[bay.id] && bayStatuses[bay.id].closed;
-        
-        bayCounts[bay.id] = {
-          ...bay,
-          available: count === 0 && !isManuallyClosed,
-          booked: count > 0,
-          manuallyClosed: isManuallyClosed
-        };
-      });
-      
-      setBayAvailability(bayCounts);
-    } catch (error) {
-      console.error('Error checking bay availability:', error);
-    } finally {
-      setCheckingBays(false);
-    }
-  };
-
-  // Update bay availability when branch, date, or time changes
-  useEffect(() => {
-    if (bookingData.selectedLocation && bookingData.selectedDate && bookingData.selectedTime) {
-      fetchBayAvailability(bookingData.selectedLocation, bookingData.selectedDate, bookingData.selectedTime);
-    }
-  }, [bookingData.selectedLocation, bookingData.selectedDate, bookingData.selectedTime]);
-
   // Filter branches by region
 
   return (
@@ -664,9 +599,8 @@ function BookingPage() {
               { num: 2, label: 'Vehicle', icon: '🚗' },
               { num: 3, label: 'Services', icon: '🔧' },
               { num: 4, label: 'Date/Time', icon: '📅' },
-              { num: 5, label: 'Service Bay', icon: '🏢' },
-              { num: 6, label: 'Your Info', icon: '👤' },
-              { num: 7, label: 'Confirm', icon: '✓' }
+              { num: 5, label: 'Your Info', icon: '👤' },
+              { num: 6, label: 'Confirm', icon: '✓' }
             ].map((step, index) => (
               <div key={step.label} className="flex items-center flex-shrink-0">
                 <div className="flex items-center">
@@ -1179,176 +1113,14 @@ function BookingPage() {
                       : 'bg-gray-700 text-gray-500 cursor-not-allowed'
                   }`}
                 >
-                  Next: Select Bay →
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 5: Service Bay Selection (OPTIONAL) */}
-          {currentStep === 5 && (
-            <div className="animate-fade-up">
-              <h2 className="text-2xl font-display font-bold uppercase text-white mb-2">Service Bay Preference</h2>
-              <p className="text-brand-textMuted text-sm mb-6">Choose a preferred bay or let the branch admin assign one for you.</p>
-              
-              {/* Bay Availability Info */}
-              {bookingData.selectedLocation && bookingData.selectedDate && bookingData.selectedTime && (
-                <div className="mb-6 p-4 bg-brand-raised border border-brand-border rounded-lg">
-                  <div className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-brand-yellow flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                    </svg>
-                    <div>
-                      <p className="text-white font-semibold text-sm">Appointment Details</p>
-                      <p className="text-brand-textDim text-xs mt-1">
-                        {bookingData.selectedDate} at {bookingData.selectedTime}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {/* No Preference Option */}
-              <div className="mb-6">
-                <button
-                  onClick={() => updateBooking('bayPreference', 'no-preference')}
-                  className={`w-full p-4 rounded-lg border-2 transition-all ${
-                    bookingData.bayPreference === 'no-preference'
-                      ? 'bg-brand-yellow/10 border-brand-yellow shadow-[0_0_24px_rgba(255,215,0,0.2)]'
-                      : 'bg-brand-raised border-brand-border hover:border-brand-yellow/50'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                      bookingData.bayPreference === 'no-preference'
-                        ? 'bg-brand-yellow/20 border border-brand-yellow/40'
-                        : 'bg-gray-700 border border-gray-600'
-                    }`}>
-                      <svg className="w-6 h-6 text-brand-yellow" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div className="text-left flex-1">
-                      <h3 className="font-bold text-lg text-white">No Preference</h3>
-                      <p className="text-xs text-brand-textMuted">Branch admin will assign the best available bay</p>
-                    </div>
-                    {bookingData.bayPreference === 'no-preference' && (
-                      <svg className="w-6 h-6 text-brand-yellow" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                    )}
-                  </div>
-                </button>
-              </div>
-
-              {/* Bay Selection Grid */}
-              <div className="mb-6">
-                <label className="block text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-3">
-                  Or Select Specific Bay (Optional) {checkingBays && <span className="text-brand-yellow text-xs">(Checking availability...)</span>}
-                </label>
-                
-                {checkingBays ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {[1, 2, 3, 4].map(i => (
-                      <div key={i} className="bg-brand-raised border border-brand-border rounded-lg p-4 animate-pulse">
-                        <div className="h-6 bg-gray-700 rounded mb-2"></div>
-                        <div className="h-4 bg-gray-700 rounded w-2/3"></div>
-                      </div>
-                    ))}
-                  </div>
-                ) : Object.keys(bayAvailability).length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-brand-textMuted">Please select a date and time first to see available bays.</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {Object.values(bayAvailability).map((bay) => {
-                      const isDisabled = !bay.available;
-                      
-                      return (
-                        <button
-                          key={bay.id}
-                          onClick={() => !isDisabled && updateBooking('selectedBay', bay.id.toString())}
-                          disabled={isDisabled}
-                          className={`p-4 rounded-lg border-2 transition-all text-left relative ${
-                            isDisabled
-                              ? 'bg-red-500/10 border-red-500/30 cursor-not-allowed opacity-50'
-                              : bookingData.selectedBay === bay.id.toString()
-                                ? 'bg-brand-yellow/10 border-brand-yellow shadow-[0_0_24px_rgba(255,215,0,0.2)]'
-                                : 'bg-brand-raised border-brand-border hover:border-brand-yellow/50'
-                          }`}
-                        >
-                          {/* Bay Header */}
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <h3 className={`font-bold text-lg ${
-                                isDisabled ? 'text-red-400/50' : bookingData.selectedBay === bay.id.toString() ? 'text-brand-yellow' : 'text-white'
-                              }`}>
-                                {bay.name}
-                              </h3>
-                              <p className="text-xs text-brand-textMuted">{bay.type}</p>
-                            </div>
-                            
-                            {/* Status Badge */}
-                            {bay.manuallyClosed ? (
-                              <span className="bg-orange-500/20 text-orange-400 text-xs font-bold px-2 py-1 rounded-full">
-                                Closed for Walk-in
-                              </span>
-                            ) : bay.available ? (
-                              <span className="bg-green-500/20 text-green-400 text-xs font-bold px-2 py-1 rounded-full">
-                                Available
-                              </span>
-                            ) : (
-                              <span className="bg-red-500/20 text-red-400 text-xs font-bold px-2 py-1 rounded-full">
-                                Occupied
-                              </span>
-                            )}
-                          </div>
-                          
-                          {/* Selected Checkmark */}
-                          {bookingData.selectedBay === bay.id.toString() && (
-                            <div className="absolute top-4 right-4">
-                              <svg className="w-6 h-6 text-brand-yellow" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                              </svg>
-                            </div>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-                
-                {/* Error Message */}
-                {formErrors.selectedBay && (
-                  <p className="mt-3 text-red-400 text-sm">{formErrors.selectedBay}</p>
-                )}
-              </div>
-
-              <div className="flex justify-between mt-6">
-                <button
-                  onClick={prevStep}
-                  className="px-6 py-3 rounded-md font-display font-bold uppercase tracking-wider text-brand-textMuted border border-brand-border hover:border-brand-yellow hover:text-white transition-all"
-                >
-                  ← Back
-                </button>
-                <button
-                  onClick={nextStep}
-                  disabled={!isStepValid()}
-                  className={`px-8 py-3 rounded-md font-display font-bold uppercase tracking-wider transition-all ${
-                    isStepValid()
-                      ? 'bg-brand-yellow text-black hover:bg-yellow-400'
-                      : 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                  }`}
-                >
                   Next: Your Info →
                 </button>
               </div>
             </div>
           )}
 
-          {/* STEP 6: Customer Details */}
-          {currentStep === 6 && (
+          {/* STEP 5: Customer Details (Bay assigned by admin during approval) */}
+          {currentStep === 5 && (
             <div className="animate-fade-up">
               <h2 className="text-2xl font-display font-bold uppercase text-white mb-2">Your Information</h2>
               <p className="text-brand-textMuted text-sm mb-6">We'll use these details to confirm and contact you about your appointment.</p>
@@ -1469,8 +1241,8 @@ function BookingPage() {
             </div>
           )}
 
-          {/* STEP 7: Review & Confirm */}
-          {currentStep === 7 && (
+          {/* STEP 6: Review & Confirm */}
+          {currentStep === 6 && (
             <div className="animate-fade-up">
               <h2 className="text-2xl font-display font-bold uppercase text-white mb-2">Review & Confirm</h2>
               <p className="text-brand-textMuted text-sm mb-6">Please review your booking details before confirming.</p>

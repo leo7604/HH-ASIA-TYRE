@@ -35,8 +35,9 @@ function BookingPage() {
     selectedDate: '',
     selectedTime: '',
 
-    // Step 5: Service Bay
+    // Step 5: Service Bay (OPTIONAL - can be assigned by admin later)
     selectedBay: '',
+    bayPreference: 'no-preference', // 'no-preference' or specific bay ID
 
     // Step 6: Customer Details
     fullName: '',
@@ -178,10 +179,8 @@ function BookingPage() {
         }
         break;
       case 5:
-        if (!bookingData.selectedBay) {
-          errors.selectedBay = 'Please select a service bay';
-          isValid = false;
-        }
+        // Bay selection is now OPTIONAL - admin can assign later
+        // No validation required, always valid
         break;
       case 6:
         if (!bookingData.fullName.trim()) {
@@ -413,7 +412,7 @@ function BookingPage() {
       case 4:
         return bookingData.selectedDate && bookingData.selectedTime;
       case 5:
-        return bookingData.selectedBay;
+        return true;  // Bay selection is optional - always valid
       case 6:
         return bookingData.fullName && bookingData.email && bookingData.phone;
       case 7:
@@ -1186,11 +1185,11 @@ function BookingPage() {
             </div>
           )}
 
-          {/* STEP 5: Service Bay Selection */}
+          {/* STEP 5: Service Bay Selection (OPTIONAL) */}
           {currentStep === 5 && (
             <div className="animate-fade-up">
-              <h2 className="text-2xl font-display font-bold uppercase text-white mb-2">Select Service Bay</h2>
-              <p className="text-brand-textMuted text-sm mb-6">Choose your preferred service bay for your appointment.</p>
+              <h2 className="text-2xl font-display font-bold uppercase text-white mb-2">Service Bay Preference</h2>
+              <p className="text-brand-textMuted text-sm mb-6">Choose a preferred bay or let the branch admin assign one for you.</p>
               
               {/* Bay Availability Info */}
               {bookingData.selectedLocation && bookingData.selectedDate && bookingData.selectedTime && (
@@ -1209,10 +1208,43 @@ function BookingPage() {
                 </div>
               )}
               
+              {/* No Preference Option */}
+              <div className="mb-6">
+                <button
+                  onClick={() => updateBooking('bayPreference', 'no-preference')}
+                  className={`w-full p-4 rounded-lg border-2 transition-all ${
+                    bookingData.bayPreference === 'no-preference'
+                      ? 'bg-brand-yellow/10 border-brand-yellow shadow-[0_0_24px_rgba(255,215,0,0.2)]'
+                      : 'bg-brand-raised border-brand-border hover:border-brand-yellow/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                      bookingData.bayPreference === 'no-preference'
+                        ? 'bg-brand-yellow/20 border border-brand-yellow/40'
+                        : 'bg-gray-700 border border-gray-600'
+                    }`}>
+                      <svg className="w-6 h-6 text-brand-yellow" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="text-left flex-1">
+                      <h3 className="font-bold text-lg text-white">No Preference</h3>
+                      <p className="text-xs text-brand-textMuted">Branch admin will assign the best available bay</p>
+                    </div>
+                    {bookingData.bayPreference === 'no-preference' && (
+                      <svg className="w-6 h-6 text-brand-yellow" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </div>
+                </button>
+              </div>
+
               {/* Bay Selection Grid */}
               <div className="mb-6">
                 <label className="block text-xs font-bold uppercase tracking-wider text-brand-textMuted mb-3">
-                  Available Service Bays {checkingBays && <span className="text-brand-yellow text-xs">(Checking availability...)</span>}
+                  Or Select Specific Bay (Optional) {checkingBays && <span className="text-brand-yellow text-xs">(Checking availability...)</span>}
                 </label>
                 
                 {checkingBays ? (

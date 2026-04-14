@@ -14,6 +14,9 @@ function AdminDashboard() {
   const [viewMode, setViewMode] = useState('list'); // list or calendar
   const [bayStatuses, setBayStatuses] = useState({}); // Track manually closed bays
   const [showBayManager, setShowBayManager] = useState(false); // Bay manager modal
+  const [showBayAssigner, setShowBayAssigner] = useState(false); // Bay assignment modal
+  const [pendingApprovalId, setPendingApprovalId] = useState(null); // Booking being approved
+  const [selectedBayForAssignment, setSelectedBayForAssignment] = useState(null); // Bay to assign
   const toast = useToast();
   
   // Check authentication and get current admin
@@ -169,10 +172,29 @@ function AdminDashboard() {
     setAppointments(updated);
   };
 
-  const approveAppointment = async (id) => {
-    // First, update local status
-    updateAppointmentStatus(id, 'approved');
+  const initiateApproval = (id) => {
+    // Get the appointment
+    const allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+    const appointment = allAppointments.find(apt => apt.id === id);
     
+    if (!appointment) {
+      toast.error('Appointment not found');
+      return;
+    }
+    
+    // Check if bay is already assigned
+    if (appointment.bayId) {
+      // Bay already assigned, approve directly
+      approveAppointment(id);
+    } else {
+      // Show bay assignment modal
+      setPendingApprovalId(id);
+      setSelectedBayForAssignment(appointment.bayPreference || null);
+      setShowBayAssigner(true);
+    }
+  };
+
+  const approveAppointment = async (id, bayId = null, bayName = null) => {
     // Get the appointment data
     const allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
     const appointment = allAppointments.find(apt => apt.id === id);
@@ -182,25 +204,44 @@ function AdminDashboard() {
       return;
     }
     
+    // Update with assigned bay if provided
+    const updatedWithBay = allAppointments.map(apt => {
+      if (apt.id === id) {
+        return { 
+          ...apt, 
+          bayId: bayId || apt.bayId,
+          bayName: bayName || apt.bayName,
+          status: 'approved'
+        };
+      }
+      return apt;
+    });
+    
+    localStorage.setItem('appointments', JSON.stringify(updatedWithBay));
+    setAppointments(updatedWithBay);
+    
+    // Get updated appointment
+    const updatedAppointment = updatedWithBay.find(apt => apt.id === id);
+    
     // Try to send to database API
     try {
       const apiPayload = {
-        customerName: appointment.customerName,
-        phone: appointment.phone,
-        email: appointment.email,
-        service: appointment.services?.[0] || '',  // Primary service for Team B's auto-checkbox
-        serviceType: appointment.services?.join(', ') || '',  // All services for display
-        vehicleMake: appointment.vehicleMake,
-        vehicleModel: appointment.vehicleModel,
-        vehicleYear: appointment.vehicleYear,
-        plateNumber: appointment.plateNumber,
-        preferredDate: appointment.date,
-        preferredTime: appointment.time,
-        branch: 'MNL', // This should be mapped from branchId
-        notes: appointment.notes || '',
+        customerName: updatedAppointment.customerName,
+        phone: updatedAppointment.phone,
+        email: updatedAppointment.email,
+        service: updatedAppointment.services?.[0] || '',
+        serviceType: updatedAppointment.services?.join(', ') || '',
+        vehicleMake: updatedAppointment.vehicleMake,
+        vehicleModel: updatedAppointment.vehicleModel,
+        vehicleYear: updatedAppointment.vehicleYear,
+        plateNumber: updatedAppointment.plateNumber,
+        preferredDate: updatedAppointment.date,
+        preferredTime: updatedAppointment.time,
+        branch: 'MNL',
+        notes: updatedAppointment.notes || '',
         status: 'approved',
-        bayId: appointment.bayId || null,
-        bayName: appointment.bayName || null,
+        bayId: updatedAppointment.bayId || null,
+        bayName: updatedAppointment.bayName || null,
       };
       
       const response = await fetch('https://hh-asia-tyre-crm-inv-sys.vercel.app/api/public/bookings', {
@@ -640,7 +681,7 @@ function AdminDashboard() {
                           {apt.status === 'pending' && (
                             <>
                               <button
-                                onClick={() => approveAppointment(apt.id)}
+                                onClick={() => initiateApproval(apt.id)}
                                 className="bg-green-500/20 border border-green-500/40 text-green-400 px-3 py-1.5 rounded text-xs font-bold uppercase hover:bg-green-500/30 transition-colors"
                               >
                                 Approve
@@ -760,6 +801,135 @@ function AdminDashboard() {
               >
                 Cancel
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bay Assignment Modal (Shown during approval) */}
+      {showBayAssigner && pendingApprovalId && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+          <div className="bg-brand-card border border-brand-border rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="p-6 border-b border-brand-border flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-display font-black text-white mb-1">Assign Service Bay</h2>
+                <p className="text-brand-textMuted text-sm">Select a bay for this booking before approving</p>
+              </div>
+              <button
+                onClick={() => setShowBayAssigner(false)}
+                className="text-brand-textMuted hover:text-white transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="p-6">
+              {(() => {
+                const branch = locations.find(l => l.id === (currentAdmin.branchId || 1));
+                if (!branch || !branch.serviceBays) {
+                  return <div className="text-brand-textMuted text-center py-8">No bays configured</div>;
+                }
+
+                return (
+                  <>
+                    {/* Booking Info */}
+                    <div className="mb-6 p-4 bg-brand-raised border border-brand-border rounded-lg">
+                      <div className="text-sm text-brand-textMuted mb-2">Booking Details:</div>
+                      <div className="text-white font-semibold">
+                        {(() => {
+                          const apt = JSON.parse(localStorage.getItem('appointments') || '[]').find(a => a.id === pendingApprovalId);
+                          if (!apt) return '';
+                          return `${apt.customerName} - ${apt.date} at ${apt.time}`;
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Bay Options */}
+                    <div className="space-y-3 mb-6">
+                      {branch.serviceBays.map((bay) => {
+                        const isClosed = isBayClosed(bay.id);
+                        return (
+                          <button
+                            key={bay.id}
+                            onClick={() => !isClosed && setSelectedBayForAssignment(bay.id)}
+                            disabled={isClosed}
+                            className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
+                              isClosed
+                                ? 'bg-red-500/10 border-red-500/30 cursor-not-allowed opacity-50'
+                                : selectedBayForAssignment === bay.id
+                                  ? 'bg-brand-yellow/10 border-brand-yellow shadow-[0_0_24px_rgba(255,215,0,0.2)]'
+                                  : 'bg-brand-raised border-brand-border hover:border-brand-yellow/50'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                                  isClosed
+                                    ? 'bg-red-500/20 border border-red-500/40'
+                                    : selectedBayForAssignment === bay.id
+                                      ? 'bg-brand-yellow/20 border border-brand-yellow/40'
+                                      : 'bg-gray-700 border border-gray-600'
+                                }`}>
+                                  <svg className={`w-6 h-6 ${isClosed ? 'text-red-400' : selectedBayForAssignment === bay.id ? 'text-brand-yellow' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zm1 14a1 1 0 100-2 1 1 0 000 2zm5-1.757l4.9-4.9a2 2 0 000-2.828L13.485 5.1a2 2 0 00-2.828 0L10 5.757v8.486zM16 18.707a1 1 0 01-1.414 0L12 16.12V14h2.12l2.586 2.586a1 1 0 010 1.414z" clipRule="evenodd" />
+                                  </svg>
+                                </div>
+                                <div>
+                                  <div className="text-white font-bold text-lg">{bay.name}</div>
+                                  <div className="text-brand-textMuted text-sm">{bay.type}</div>
+                                </div>
+                              </div>
+                              {isClosed ? (
+                                <span className="bg-red-500/20 text-red-400 text-xs font-bold px-3 py-1 rounded-full">
+                                  Closed
+                                </span>
+                              ) : selectedBayForAssignment === bay.id ? (
+                                <svg className="w-6 h-6 text-brand-yellow" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                              ) : (
+                                <span className="text-brand-textMuted text-xs">Select</span>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => {
+                          const apt = JSON.parse(localStorage.getItem('appointments') || '[]').find(a => a.id === pendingApprovalId);
+                          const bayId = selectedBayForAssignment;
+                          const bayName = bayId ? branch.serviceBays.find(b => b.id === bayId)?.name : null;
+                          approveAppointment(pendingApprovalId, bayId, bayName);
+                          setShowBayAssigner(false);
+                          setPendingApprovalId(null);
+                          setSelectedBayForAssignment(null);
+                        }}
+                        className="flex-1 bg-brand-yellow text-black py-3 rounded-lg font-display font-bold uppercase tracking-wider hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={!selectedBayForAssignment}
+                      >
+                        {selectedBayForAssignment ? 'Assign Bay & Approve' : 'Select a Bay First'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          // Approve without bay assignment (will assign later)
+                          approveAppointment(pendingApprovalId);
+                          setShowBayAssigner(false);
+                          setPendingApprovalId(null);
+                        }}
+                        className="px-6 bg-brand-raised border border-brand-border text-white py-3 rounded-lg font-display font-bold uppercase tracking-wider hover:border-brand-yellow transition-colors"
+                      >
+                        Skip for Now
+                      </button>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>

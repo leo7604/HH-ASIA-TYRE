@@ -423,9 +423,14 @@ function AdminDashboard() {
       return;
     }
     
+    // Ensure ID is a number
+    const numericId = parseInt(id, 10);
+    console.log('Delete appointment with ID:', id, '-> numeric:', numericId);
+    
     // Delete from Supabase FIRST
     try {
-      const result = await deleteBookingFromSupabase(id);
+      const result = await deleteBookingFromSupabase(numericId);
+      console.log('Delete result:', result);
       if (!result.success) {
         console.error('Failed to delete from Supabase:', result.error);
         toast.error('Failed to delete from database');

@@ -356,17 +356,26 @@ export async function cancelBooking(bookingId, reason) {
  * Delete booking
  */
 export async function deleteBooking(bookingId) {
-  const { error } = await supabase
+  console.log('Attempting to delete booking with ID:', bookingId);
+  console.log('ID type:', typeof bookingId);
+  
+  const { data, error } = await supabase
     .from('bookings')
     .delete()
-    .eq('id', bookingId);
+    .eq('id', bookingId)
+    .select();
 
+  console.log('Delete result:', { data, error });
+  
   if (error) {
     console.error('Error deleting booking:', error);
+    console.error('Error code:', error.code);
+    console.error('Error message:', error.message);
     return { success: false, error };
   }
 
-  return { success: true };
+  console.log('Delete successful, rows affected:', data?.length || 0);
+  return { success: true, data };
 }
 
 /**

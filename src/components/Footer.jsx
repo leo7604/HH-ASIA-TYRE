@@ -1,21 +1,48 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PWAInstallPrompt from './PWAInstallPrompt';
-import { useToast } from './ToastProvider';
 
 function Footer() {
   const currentYear = new Date().getFullYear();
-  const toast = useToast();
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showTestButton, setShowTestButton] = useState(false);
 
-  const showToastDemo = () => {
-    const types = ['success', 'error', 'warning', 'info'];
-    const messages = [
-      'Booking confirmed successfully!',
-      'Failed to save changes. Please try again.',
-      'Your session will expire in 5 minutes.',
-      'New appointment request received.'
-    ];
-    const randomIndex = Math.floor(Math.random() * types.length);
-    toast[types[randomIndex]](messages[randomIndex]);
+  useEffect(() => {
+    // Listen for PWA install prompt
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowTestButton(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const testPWAInstall = async () => {
+    if (!deferredPrompt) {
+      alert('PWA install prompt not available. Make sure you are testing on HTTPS or localhost.');
+      return;
+    }
+
+    // Show the install prompt
+    deferredPrompt.prompt();
+    
+    // Wait for the user to respond to the prompt
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+      console.log('✅ User accepted the PWA install prompt');
+    } else {
+      console.log('❌ User dismissed the PWA install prompt');
+    }
+    
+    // Clear the deferredPrompt
+    setDeferredPrompt(null);
+    setShowTestButton(false);
   };
 
   return (
@@ -76,13 +103,15 @@ function Footer() {
         <div className="border-t border-brand-border pt-6 text-center text-brand-textDim text-sm">
           <p>© {currentYear} HH Asia Tyre Alliance Plus+. All rights reserved.</p>
           
-          {/* Toast Demo Button - Remove in production */}
-          <button
-            onClick={showToastDemo}
-            className="mt-4 px-4 py-2 bg-brand-yellow/10 hover:bg-brand-yellow/20 text-brand-yellow rounded-md text-xs font-semibold transition-colors border border-brand-yellow/30"
-          >
-            🎉 Test Toast Notification
-          </button>
+          {/* PWA Install Test Button - For testing purposes */}
+          {showTestButton && (
+            <button
+              onClick={testPWAInstall}
+              className="mt-4 px-4 py-2 bg-brand-yellow/10 hover:bg-brand-yellow/20 text-brand-yellow rounded-md text-xs font-semibold transition-colors border border-brand-yellow/30 flex items-center gap-2 mx-auto"
+            >
+              📱 Test PWA Install Prompt
+            </button>
+          )}
         </div>
       </div>
 

@@ -1,0 +1,16 @@
+-- ============================================
+-- HH ASIA TYRE - COMPLETE DATABASE SCHEMA
+-- For Supabase (PostgreSQL)
+-- Isolated from Team A's system
+-- ============================================
+
+-- TABLES INCLUDED:
+-- 1. branches - Branch locations
+-- 2. customers - Customer information  
+-- 3. vehicles - Customer vehicles
+-- 4. bookings - Booking requests
+-- 5. branch_admins - Branch admin accounts
+-- 6. super_admins - Super admin accounts
+-- 7. audit_logs - Activity tracking
+-- 8. service_bays - Service bay management
+-- ============================================

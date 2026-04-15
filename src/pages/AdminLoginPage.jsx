@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { locations } from '../data/mockData';
+import { verifyBranchAdminPassword, updateAdminLastLogin } from '../utils/supabase';
 
 function AdminLoginPage() {
   const navigate = useNavigate();
@@ -15,13 +16,11 @@ function AdminLoginPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     handleLogin();
-    setLoading(false);
   };
 
-  const handleLogin = () => {
-    // Check Super Admin credentials
+  const handleLogin = async () => {
+    // Check Super Admin credentials (hardcoded for now)
     if (formData.email === 'superadmin@hhasia.com' && formData.password === 'SuperAdmin2024!') {
       localStorage.setItem('currentAdmin', JSON.stringify({
         id: 0,
@@ -31,29 +30,42 @@ function AdminLoginPage() {
         branchId: null,
         branchName: 'All Branches'
       }));
+      setLoading(false);
       navigate('/super-admin');
       return;
     }
 
-    // Authentication for Branch Admin using localStorage
-    // Check both possible keys for compatibility
-    const admins1 = JSON.parse(localStorage.getItem('branchAdmins') || '[]');
-    const admins2 = JSON.parse(localStorage.getItem('branch_admins') || '[]');
-    const admins = [...admins1, ...admins2];
-    const admin = admins.find(a => a.email === formData.email && a.password === formData.password);
-
-    if (admin) {
-      // Get branch info
-      const branch = locations.find(l => l.id === admin.branchId);
+    // Authentication for Branch Admin using Supabase
+    try {
+      const result = await verifyBranchAdminPassword(formData.email, formData.password);
       
-      // Store session with branch info
-      localStorage.setItem('currentAdmin', JSON.stringify({
-        ...admin,
-        branchName: branch?.name || 'Unknown Branch'
-      }));
-      navigate('/admin');
-    } else {
-      setError('Invalid email or password. Contact Super Admin for access.');
+      if (result.success) {
+        const admin = result.data;
+        // Get branch info
+        const branch = locations.find(l => l.id === admin.branch_id);
+        
+        // Update last login
+        await updateAdminLastLogin(admin.id);
+        
+        // Store session with branch info
+        localStorage.setItem('currentAdmin', JSON.stringify({
+          id: admin.id,
+          fullName: admin.full_name,
+          email: admin.email,
+          role: 'branch_admin',
+          branchId: admin.branch_id,
+          branchName: branch?.name || 'Unknown Branch'
+        }));
+        setLoading(false);
+        navigate('/admin');
+      } else {
+        setError('Invalid email or password. Contact Super Admin for access.');
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Login failed. Please try again.');
+      setLoading(false);
     }
   };
 
@@ -155,9 +167,8 @@ function AdminLoginPage() {
             
             <div className="border-t border-brand-border mt-3 pt-3">
               <p className="text-brand-textMuted text-xs text-center mb-2 font-semibold uppercase">Branch Admin Demo:</p>
-              <p className="text-brand-textDim text-xs text-center font-mono">maria.santos@hhasia.com</p>
-              <p className="text-brand-textDim text-xs text-center font-mono">alabang2026</p>
-              <p className="text-brand-textDim text-xs text-center text-brand-yellow mt-1">(Alabang Branch)</p>
+              <p className="text-brand-textDim text-xs text-center text-brand-yellow font-mono">Created via Super Admin</p>
+              <p className="text-brand-textDim text-xs text-center text-brand-textMuted mt-1">Create via Super Admin Dashboard</p>
             </div>
           </div>
         </div>

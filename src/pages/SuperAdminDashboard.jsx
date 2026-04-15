@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react';
 import { locations } from '../data/mockData';
+import {
+  getAllBranchAdminsSupabase,
+  createBranchAdminSupabase,
+  updateBranchAdminSupabase,
+  deleteBranchAdminSupabase,
+  toggleBranchAdminStatus
+} from '../utils/supabase';
 
 function SuperAdminDashboard() {
   const [branchAdmins, setBranchAdmins] = useState([]);
@@ -20,42 +27,74 @@ function SuperAdminDashboard() {
     loadBranchAdmins();
   }, []);
 
-  const loadBranchAdmins = () => {
-    let admins = JSON.parse(localStorage.getItem('branch_admins') || '[]');
-    
-    // Add sample data if empty (for design purposes)
-    if (admins.length === 0) {
-      admins = [
-        {
-          id: 1,
-          email: 'maria.santos@hhasia.com',
-          password: 'alabang2026',
-          fullName: 'Maria Santos',
-          branchId: 1,
-          role: 'branch_admin',
-          status: 'active',
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 2,
-          email: 'juan.reyes@hhasia.com',
-          password: 'laoag2026',
-          fullName: 'Juan Reyes',
-          branchId: 4,
-          role: 'branch_admin',
-          status: 'active',
-          createdAt: new Date().toISOString()
+  const loadBranchAdmins = async () => {
+    try {
+      const result = await getAllBranchAdminsSupabase();
+      
+      if (result.success && result.data.length > 0) {
+        // Map Supabase data to local format for UI compatibility
+        const admins = result.data.map(admin => ({
+          id: admin.id,
+          email: admin.email,
+          password: admin.password_hash,
+          fullName: admin.full_name,
+          branchId: admin.branch_id,
+          role: admin.role || 'branch_admin',
+          status: admin.is_active ? 'active' : 'inactive',
+          createdAt: admin.created_at
+        }));
+        setBranchAdmins(admins);
+      } else {
+        // If no admins in Supabase, try localStorage fallback
+        let admins = JSON.parse(localStorage.getItem('branch_admins') || '[]');
+        
+        // Add sample data if empty (for design purposes)
+        if (admins.length === 0) {
+          admins = [
+            {
+              id: 1,
+              email: 'maria.santos@hhasia.com',
+              password: 'alabang2026',
+              fullName: 'Maria Santos',
+              branchId: 1,
+              role: 'branch_admin',
+              status: 'active',
+              createdAt: new Date().toISOString()
+            },
+            {
+              id: 2,
+              email: 'juan.reyes@hhasia.com',
+              password: 'laoag2026',
+              fullName: 'Juan Reyes',
+              branchId: 4,
+              role: 'branch_admin',
+              status: 'active',
+              createdAt: new Date().toISOString()
+            }
+          ];
+          localStorage.setItem('branch_admins', JSON.stringify(admins));
         }
-      ];
-      localStorage.setItem('branch_admins', JSON.stringify(admins));
+        
+        setBranchAdmins(admins);
+      }
+    } catch (err) {
+      console.error('Error loading branch admins:', err);
+      // Fallback to localStorage
+      let admins = JSON.parse(localStorage.getItem('branch_admins') || '[]');
+      if (admins.length === 0) {
+        admins = [
+          { id: 1, email: 'maria.santos@hhasia.com', password: 'alabang2026', fullName: 'Maria Santos', branchId: 1, role: 'branch_admin', status: 'active', createdAt: new Date().toISOString() },
+          { id: 2, email: 'juan.reyes@hhasia.com', password: 'laoag2026', fullName: 'Juan Reyes', branchId: 4, role: 'branch_admin', status: 'active', createdAt: new Date().toISOString() }
+        ];
+        localStorage.setItem('branch_admins', JSON.stringify(admins));
+      }
+      setBranchAdmins(admins);
     }
-    
-    setBranchAdmins(admins);
   };
 
 
 
-  const handleCreateAdmin = (e) => {
+  const handleCreateAdmin = async (e) => {
     e.preventDefault();
     
     // Validation
@@ -69,48 +108,34 @@ function SuperAdminDashboard() {
       return;
     }
 
-    // Get existing admins
-    const admins = JSON.parse(localStorage.getItem('branch_admins') || '[]');
-    
-    // Check if email already exists
-    if (admins.find(a => a.email === formData.email)) {
-      setError('Email already registered');
-      return;
+    try {
+      // Create in Supabase
+      const result = await createBranchAdminSupabase({
+        email: formData.email,
+        password: formData.password,
+        fullName: formData.fullName,
+        branchId: parseInt(formData.branchId)
+      });
+
+      if (result.success) {
+        setSuccess('Branch admin created successfully!');
+        setShowCreateModal(false);
+        setFormData({
+          email: '',
+          password: '',
+          confirmPassword: '',
+          fullName: '',
+          branchId: ''
+        });
+        await loadBranchAdmins();
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setError(result.error?.message || 'Failed to create branch admin');
+      }
+    } catch (err) {
+      console.error('Error creating branch admin:', err);
+      setError('Failed to create branch admin. Please try again.');
     }
-
-    // Check if branch already has an admin
-    if (admins.find(a => a.branchId === parseInt(formData.branchId))) {
-      setError('This branch already has an admin');
-      return;
-    }
-
-    // Create new admin
-    const newAdmin = {
-      id: Date.now(),
-      email: formData.email,
-      password: formData.password,
-      fullName: formData.fullName,
-      branchId: parseInt(formData.branchId),
-      role: 'branch_admin',
-      status: 'active',
-      createdAt: new Date().toISOString()
-    };
-
-    admins.push(newAdmin);
-    localStorage.setItem('branch_admins', JSON.stringify(admins));
-
-    setSuccess('Branch admin created successfully!');
-    setShowCreateModal(false);
-    setFormData({
-      email: '',
-      password: '',
-      confirmPassword: '',
-      fullName: '',
-      branchId: ''
-    });
-    loadBranchAdmins();
-    
-    setTimeout(() => setSuccess(''), 3000);
   };
 
   const handleEditAdmin = (admin) => {
@@ -125,7 +150,7 @@ function SuperAdminDashboard() {
     setShowCreateModal(true);
   };
 
-  const handleUpdateAdmin = (e) => {
+  const handleUpdateAdmin = async (e) => {
     e.preventDefault();
     
     // Validation
@@ -139,68 +164,71 @@ function SuperAdminDashboard() {
       return;
     }
 
-    // Get existing admins
-    const admins = JSON.parse(localStorage.getItem('branch_admins') || '[]');
-    
-    // Update admin
-    const updatedAdmins = admins.map(admin => {
-      if (admin.id === editingAdmin.id) {
-        return {
-          ...admin,
-          email: formData.email,
-          password: formData.password || admin.password,
-          fullName: formData.fullName,
-          branchId: parseInt(formData.branchId)
-        };
+    try {
+      // Update in Supabase
+      const result = await updateBranchAdminSupabase(editingAdmin.id, {
+        email: formData.email,
+        fullName: formData.fullName,
+        password: formData.password || null
+      });
+
+      if (result.success) {
+        setSuccess('Branch admin updated successfully!');
+        setShowCreateModal(false);
+        setEditingAdmin(null);
+        setFormData({
+          email: '',
+          password: '',
+          confirmPassword: '',
+          fullName: '',
+          branchId: ''
+        });
+        await loadBranchAdmins();
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setError(result.error?.message || 'Failed to update branch admin');
       }
-      return admin;
-    });
-
-    localStorage.setItem('branch_admins', JSON.stringify(updatedAdmins));
-
-    setSuccess('Branch admin updated successfully!');
-    setShowCreateModal(false);
-    setEditingAdmin(null);
-    setFormData({
-      email: '',
-      password: '',
-      confirmPassword: '',
-      fullName: '',
-      branchId: ''
-    });
-    loadBranchAdmins();
-    
-    setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      console.error('Error updating branch admin:', err);
+      setError('Failed to update branch admin. Please try again.');
+    }
   };
 
-  const handleDeleteAdmin = (adminId) => {
+  const handleDeleteAdmin = async (adminId) => {
     if (!confirm('Are you sure you want to delete this branch admin?')) {
       return;
     }
 
-    const admins = JSON.parse(localStorage.getItem('branch_admins') || '[]');
-    const updatedAdmins = admins.filter(a => a.id !== adminId);
-    localStorage.setItem('branch_admins', JSON.stringify(updatedAdmins));
-
-    setSuccess('Branch admin deleted successfully!');
-    loadBranchAdmins();
-    
-    setTimeout(() => setSuccess(''), 3000);
+    try {
+      const result = await deleteBranchAdminSupabase(adminId);
+      
+      if (result.success) {
+        setSuccess('Branch admin deleted successfully!');
+        await loadBranchAdmins();
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setError(result.error?.message || 'Failed to delete branch admin');
+      }
+    } catch (err) {
+      console.error('Error deleting branch admin:', err);
+      setError('Failed to delete branch admin. Please try again.');
+    }
   };
 
-  const handleToggleStatus = (adminId) => {
-    const admins = JSON.parse(localStorage.getItem('branch_admins') || '[]');
-    const updatedAdmins = admins.map(admin => {
-      if (admin.id === adminId) {
-        return {
-          ...admin,
-          status: admin.status === 'active' ? 'inactive' : 'active'
-        };
+  const handleToggleStatus = async (admin) => {
+    try {
+      const currentStatus = admin.status;
+      const result = await toggleBranchAdminStatus(admin.id, currentStatus);
+      
+      if (result.success) {
+        await loadBranchAdmins();
+      } else {
+        setError(result.error?.message || 'Failed to toggle status');
       }
-      return admin;
-    });
-    localStorage.setItem('branch_admins', JSON.stringify(updatedAdmins));
-    loadBranchAdmins();
+    } catch (err) {
+      console.error('Error toggling status:', err);
+      setError('Failed to toggle status. Please try again.');
+    }
   };
 
   const getBranchName = (branchId) => {
@@ -342,7 +370,7 @@ function SuperAdminDashboard() {
                       </td>
                       <td className="px-6 py-4">
                         <button
-                          onClick={() => handleToggleStatus(admin.id)}
+                          onClick={() => handleToggleStatus(admin)}
                           className={`px-3 py-1 rounded-full text-xs font-semibold ${
                             admin.status === 'active'
                               ? 'bg-green-500/10 text-green-400 border border-green-500/30'

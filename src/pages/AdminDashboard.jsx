@@ -3,6 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { locations } from '../data/mockData';
 import CalendarView from '../components/CalendarView';
 import { useToast } from '../components/ToastProvider';
+import { getBranchBookings, updateBookingStatus } from '../utils/supabase';
+
+// Branch ID to branch code mapping for API sync
+const BRANCH_ID_TO_CODE = {
+  1: 'ALABANG',
+  2: 'BICUTAN',
+  3: 'BACOOR',
+  4: 'SUCAT',
+  5: 'SUCAT2',
+  6: 'LAOAG'
+};
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -39,8 +50,46 @@ function AdminDashboard() {
     loadAppointments(admin);
   }, [navigate]);
 
-  const loadAppointments = (admin) => {
-    // Load appointments from localStorage
+  const loadAppointments = async (admin) => {
+    // First try to load from Supabase
+    try {
+      if (admin.role === 'branch_admin' && admin.branchId) {
+        const result = await getBranchBookings(admin.branchId);
+        
+        if (result.success && result.data.length > 0) {
+          // Map Supabase data to local format for UI compatibility
+          const allAppointments = result.data.map(booking => ({
+            id: booking.id,
+            branchId: booking.branch_id,
+            customerName: booking.full_name || 'N/A',
+            email: booking.email || '',
+            phone: booking.phone || '',
+            vehicleYear: booking.vehicle_year || '',
+            vehicleMake: booking.vehicle_make || '',
+            vehicleModel: booking.vehicle_model || '',
+            vehicleTrim: booking.vehicle_trim || '',
+            services: booking.services || [],
+            date: booking.preferred_date,
+            time: booking.preferred_time,
+            mileage: booking.mileage || 0,
+            notes: booking.customer_concern || '',
+            status: booking.status,
+            createdAt: booking.created_at,
+            bayId: booking.bay_id,
+            bayName: booking.bay_name
+          }));
+          
+          // Also save to localStorage for offline access
+          localStorage.setItem('appointments', JSON.stringify(allAppointments));
+          setAppointments(allAppointments);
+          return;
+        }
+      }
+    } catch (err) {
+      console.error('Error loading from Supabase:', err);
+    }
+    
+    // Fallback to localStorage
     let allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
     
     // Filter by branch if branch admin
@@ -48,72 +97,10 @@ function AdminDashboard() {
       allAppointments = allAppointments.filter(apt => apt.branchId === admin.branchId);
     }
     
-    // If no appointments, create sample data for design
-    if (allAppointments.length === 0) {
-      const branchId = admin.role === 'super_admin' ? 1 : admin.branchId;
-      allAppointments = [
-        {
-          id: 1,
-          branchId: branchId,
-          customerName: 'Juan Dela Cruz',
-          email: 'juan@example.com',
-          phone: '0917 123 4567',
-          vehicleYear: '2020',
-          vehicleMake: 'Toyota',
-          vehicleModel: 'Vios',
-          vehicleTrim: '1.5 G',
-          services: ['Tire Rotation', 'Oil Change'],
-          date: '2026-04-05',
-          time: '10:00 AM',
-          mileage: 50000,
-          notes: '',
-          status: 'pending',
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 2,
-          branchId: branchId,
-          customerName: 'Maria Santos',
-          email: 'maria@example.com',
-          phone: '0918 765 4321',
-          vehicleYear: '2019',
-          vehicleMake: 'Honda',
-          vehicleModel: 'Civic',
-          vehicleTrim: '1.8 S',
-          services: ['Brake Inspection', 'Battery Check'],
-          date: '2026-04-06',
-          time: '2:00 PM',
-          mileage: 65000,
-          notes: 'Customer concerned about brake noise, needs early service',
-          status: 'approved',
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 3,
-          branchId: branchId,
-          customerName: 'Pedro Reyes',
-          email: 'pedro@example.com',
-          phone: '0919 234 5678',
-          vehicleYear: '2021',
-          vehicleMake: 'Mitsubishi',
-          vehicleModel: 'Montero Sport',
-          vehicleTrim: 'GLS',
-          services: ['Wheel Alignment', 'Tire Replacement'],
-          date: '2026-04-07',
-          time: '9:00 AM',
-          mileage: 30000,
-          notes: '',
-          status: 'rejected',
-          createdAt: new Date().toISOString()
-        }
-      ];
-      localStorage.setItem('appointments', JSON.stringify(allAppointments));
-    }
-    
     setAppointments(allAppointments);
   };
 
-  const updateAppointmentStatus = (appointmentId, newStatus) => {
+  const updateAppointmentStatus = async (appointmentId, newStatus, bayId = null, bayName = null) => {
     console.log('Updating appointment status:', { appointmentId, newStatus });
     
     const allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
@@ -122,7 +109,7 @@ function AdminDashboard() {
     const updated = allAppointments.map(apt => {
       if (apt.id === appointmentId) {
         console.log('Found appointment to update:', apt);
-        return { ...apt, status: newStatus };
+        return { ...apt, status: newStatus, bayId: bayId || apt.bayId, bayName: bayName || apt.bayName };
       }
       return apt;
     });
@@ -132,6 +119,22 @@ function AdminDashboard() {
     
     localStorage.setItem('appointments', JSON.stringify(updated));
     setAppointments(updated);
+    
+    // Also update in Supabase
+    try {
+      const appointment = allAppointments.find(apt => apt.id === appointmentId);
+      if (appointment && appointment.branchId) {
+        const updates = { 
+          status: newStatus,
+          bay_id: bayId || appointment.bayId || null,
+          bay_name: bayName || appointment.bayName || null
+        };
+        const result = await updateBookingStatus(appointmentId, updates);
+        console.log('Supabase update result:', result.success ? 'SUCCESS' : 'FAILED');
+      }
+    } catch (err) {
+      console.error('Error updating Supabase:', err);
+    }
   };
 
   const initiateApproval = (id) => {
@@ -187,6 +190,9 @@ function AdminDashboard() {
     
     // Try to send to database API
     try {
+      // Format payload to match API expectations (camelCase + branch code)
+      const branchCode = BRANCH_ID_TO_CODE[updatedAppointment.branchId] || 'ALABANG';
+      
       const apiPayload = {
         customerName: updatedAppointment.customerName,
         phone: updatedAppointment.phone,
@@ -199,12 +205,14 @@ function AdminDashboard() {
         plateNumber: updatedAppointment.plateNumber,
         preferredDate: updatedAppointment.date,
         preferredTime: updatedAppointment.time,
-        branchId: updatedAppointment.branchId,
+        branch: branchCode,  // Use branch code (string) not branch ID (int)
         notes: updatedAppointment.notes || '',
         status: 'approved',
         bayId: updatedAppointment.bayId || null,
         bayName: updatedAppointment.bayName || null,
       };
+      
+      console.log('Sending to database API:', JSON.stringify(apiPayload, null, 2));
       
       const response = await fetch('https://hh-asia-tyre-crm-inv-sys.vercel.app/api/public/bookings', {
         method: 'POST',
@@ -212,18 +220,26 @@ function AdminDashboard() {
         body: JSON.stringify(apiPayload),
       });
       
-      const result = await response.json();
+      let result;
+      const responseText = await response.text();
+      try {
+        result = JSON.parse(responseText);
+      } catch (e) {
+        result = { error: responseText };
+      }
+      
+      console.log('API Response:', response.status, result);
       
       if (response.ok) {
         // Update appointment with API booking ID
         const updated = allAppointments.map(apt => 
-          apt.id === id ? { ...apt, apiBookingId: result.data?.id, apiSuccess: true } : apt
+          apt.id === id ? { ...apt, apiBookingId: result.data?.id || result.id, apiSuccess: true } : apt
         );
         localStorage.setItem('appointments', JSON.stringify(updated));
         setAppointments(updated);
         toast.success('Appointment approved and sent to database!');
       } else {
-        console.warn('API booking failed:', result.error);
+        console.warn('API booking failed:', result.error || responseText);
         toast.success('Appointment approved (saved locally)');
       }
     } catch (error) {
@@ -250,19 +266,21 @@ function AdminDashboard() {
     }
     
     try {
+      const branchCode = BRANCH_ID_TO_CODE[appointment.branchId] || 'ALABANG';
+      
       const apiPayload = {
         customerName: appointment.customerName,
         phone: appointment.phone,
         email: appointment.email,
-        service: appointment.services?.[0] || '',  // Primary service for Team B's auto-checkbox
-        serviceType: appointment.services?.join(', ') || '',  // All services for display
+        service: appointment.services?.[0] || '',
+        serviceType: appointment.services?.join(', ') || '',
         vehicleMake: appointment.vehicleMake,
         vehicleModel: appointment.vehicleModel,
         vehicleYear: appointment.vehicleYear,
         plateNumber: appointment.plateNumber,
         preferredDate: appointment.date,
         preferredTime: appointment.time,
-        branchId: appointment.branchId,
+        branch: branchCode,  // Use branch code
         notes: appointment.notes || '',
         status: appointment.status,
         bayId: appointment.bayId || null,

@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { verifySuperAdminPassword, createSuperAdmin, updateSuperAdminLastLogin } from '../utils/supabase';
 
 function SuperAdminLogin() {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -29,77 +31,92 @@ function SuperAdminLogin() {
     setError('');
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError('');
     
-    // Get registered super admins
-    const superAdmins = JSON.parse(localStorage.getItem('super_admins') || '[]');
-    
-    // Find matching admin
-    const admin = superAdmins.find(
-      a => a.email === formData.email && a.password === formData.password
-    );
-
-    if (admin) {
-      // Create session
-      localStorage.setItem('superadmin_session', JSON.stringify({
-        id: admin.id,
-        email: admin.email,
-        fullName: admin.fullName,
-        role: 'super_admin',
-        loginTime: new Date().toISOString()
-      }));
+    try {
+      // Verify credentials using Supabase
+      const result = await verifySuperAdminPassword(formData.email, formData.password);
       
-      navigate('/super-admin');
-    } else {
-      setError('Invalid email or password');
+      if (result.success) {
+        const admin = result.data;
+        
+        // Update last login
+        await updateSuperAdminLastLogin(admin.id);
+        
+        // Create session
+        localStorage.setItem('superadmin_session', JSON.stringify({
+          id: admin.id,
+          email: admin.email,
+          fullName: admin.full_name,
+          role: 'super_admin',
+          loginTime: new Date().toISOString()
+        }));
+        
+        navigate('/super-admin');
+      } else {
+        setError('Invalid email or password');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Login failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError('');
     
-    // Validation
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
+    try {
+      // Validation
+      if (formData.password !== formData.confirmPassword) {
+        setError('Passwords do not match');
+        return;
+      }
+
+      if (formData.password.length < 6) {
+        setError('Password must be at least 6 characters');
+        return;
+      }
+
+      // Check if email already exists in Supabase
+      const existingResult = await verifySuperAdminPassword(formData.email, '');
+      if (existingResult.success || existingResult.error !== 'Admin not found') {
+        setError('Email already registered');
+        return;
+      }
+
+      // Create new super admin in Supabase
+      const result = await createSuperAdmin({
+        email: formData.email,
+        password: formData.password,
+        fullName: formData.fullName,
+        phone: ''
+      });
+
+      if (result.success) {
+        setSuccess('Account created successfully! Please login.');
+        setIsLogin(true);
+        setFormData({
+          email: '',
+          password: '',
+          confirmPassword: '',
+          fullName: ''
+        });
+      } else {
+        setError(result.error?.message || 'Failed to create account');
+      }
+    } catch (err) {
+      console.error('Signup error:', err);
+      setError('Signup failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
-
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-
-    // Get existing super admins
-    const superAdmins = JSON.parse(localStorage.getItem('super_admins') || '[]');
-    
-    // Check if email already exists
-    if (superAdmins.find(a => a.email === formData.email)) {
-      setError('Email already registered');
-      return;
-    }
-
-    // Create new super admin
-    const newAdmin = {
-      id: Date.now(),
-      email: formData.email,
-      password: formData.password,
-      fullName: formData.fullName,
-      role: 'super_admin',
-      createdAt: new Date().toISOString()
-    };
-
-    superAdmins.push(newAdmin);
-    localStorage.setItem('super_admins', JSON.stringify(superAdmins));
-
-    setSuccess('Account created successfully! Please login.');
-    setIsLogin(true);
-    setFormData({
-      email: '',
-      password: '',
-      confirmPassword: '',
-      fullName: ''
-    });
   };
 
   const handleSubmit = (e) => {
@@ -245,9 +262,10 @@ function SuperAdminLogin() {
 
             <button
               type="submit"
-              className="w-full bg-brand-yellow text-brand-black py-3 px-6 rounded-md font-bold uppercase tracking-wider hover:bg-yellow-400 transition-colors shadow-lg"
+              disabled={loading}
+              className="w-full bg-brand-yellow text-brand-black py-3 px-6 rounded-md font-bold uppercase tracking-wider hover:bg-yellow-400 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLogin ? 'Login' : 'Create Account'}
+              {loading ? 'Processing...' : (isLogin ? 'Login' : 'Create Account')}
             </button>
           </form>
 

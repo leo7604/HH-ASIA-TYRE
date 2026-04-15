@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { locations, vehicleMakes, timeSlots, services } from '../data/mockData';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { MAX_BOOKINGS_PER_SLOT } from '../utils/bookingService';
+import { createBooking } from '../utils/supabase';
 
 function BookingPage() {
   const navigate = useNavigate();
@@ -324,6 +325,39 @@ function BookingPage() {
       
       existingAppointments.push(appointment);
       localStorage.setItem('appointments', JSON.stringify(existingAppointments));
+      
+      // Save to Supabase database
+      try {
+        const branchId = parseInt(bookingData.selectedLocation);
+        const supabaseBookingData = {
+          branch_id: branchId,
+          full_name: bookingData.fullName,
+          email: bookingData.email,
+          phone: bookingData.phone,
+          vehicle_make: bookingData.vehicleMake,
+          vehicle_model: bookingData.vehicleModel,
+          vehicle_year: parseInt(bookingData.vehicleYear),
+          vehicle_trim: bookingData.vehicleTrim || null,
+          plate_number: bookingData.plateNumber,
+          preferred_date: bookingData.selectedDate,
+          preferred_time: bookingData.selectedTime,
+          services: bookingData.selectedServices,
+          other_services: bookingData.otherServices || null,
+          customer_concern: bookingData.specialRequests || null,
+          source: 'website',
+        };
+        
+        const supabaseResult = await createBooking(supabaseBookingData);
+        
+        if (supabaseResult.success) {
+          console.log('Booking saved to Supabase:', supabaseResult.data);
+        } else {
+          console.warn('Supabase save failed (booking still saved locally):', supabaseResult.error);
+        }
+      } catch (supabaseError) {
+        console.warn('Supabase save failed:', supabaseError.message);
+        // Don't throw - booking is still saved to localStorage
+      }
       
       setShowSuccess(true);
       setTimeout(() => {

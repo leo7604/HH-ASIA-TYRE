@@ -51,33 +51,40 @@ function AdminDashboard() {
   }, [navigate]);
 
   const loadAppointments = async (admin) => {
-    // First try to load from Supabase
+    // First try to load from Supabase with customer and vehicle data
     try {
       if (admin.role === 'branch_admin' && admin.branchId) {
         const result = await getBranchBookings(admin.branchId);
         
         if (result.success && result.data.length > 0) {
-          // Map Supabase data to local format for UI compatibility
-          const allAppointments = result.data.map(booking => ({
-            id: booking.id,
-            branchId: booking.branch_id,
-            customerName: booking.full_name || 'N/A',
-            email: booking.email || '',
-            phone: booking.phone || '',
-            vehicleYear: booking.vehicle_year || '',
-            vehicleMake: booking.vehicle_make || '',
-            vehicleModel: booking.vehicle_model || '',
-            vehicleTrim: booking.vehicle_trim || '',
-            services: booking.services || [],
-            date: booking.preferred_date,
-            time: booking.preferred_time,
-            mileage: booking.mileage || 0,
-            notes: booking.customer_concern || '',
-            status: booking.status,
-            createdAt: booking.created_at,
-            bayId: booking.bay_id,
-            bayName: booking.bay_name
-          }));
+          // Map Supabase data with joined customer/vehicle to local format for UI
+          const allAppointments = result.data.map(booking => {
+            // Handle nested customer data
+            const customer = booking.customers || {};
+            const vehicle = booking.vehicles || {};
+            
+            return {
+              id: booking.id,
+              branchId: booking.branch_id,
+              customerName: customer.full_name || 'N/A',
+              email: customer.email || '',
+              phone: customer.phone || '',
+              vehicleYear: vehicle.year || '',
+              vehicleMake: vehicle.make || '',
+              vehicleModel: vehicle.model || '',
+              vehicleTrim: vehicle.trim || '',
+              vehiclePlate: vehicle.plate_number || '',
+              services: booking.services || [],
+              date: booking.preferred_date,
+              time: booking.preferred_time,
+              mileage: booking.mileage || 0,
+              notes: booking.customer_concern || '',
+              status: booking.status,
+              createdAt: booking.created_at,
+              bayId: booking.bay_id,
+              bayName: booking.bay_name
+            };
+          });
           
           // Also save to localStorage for offline access
           localStorage.setItem('appointments', JSON.stringify(allAppointments));

@@ -208,34 +208,50 @@ export async function createBooking(bookingData) {
 }
 
 /**
- * Get bookings for a branch
+ * Get bookings for a branch with customer and vehicle details
  */
 export async function getBranchBookings(branchId, filters = {}) {
-  let query = supabase
+  // Query bookings with customer and vehicle data
+  const { data, error } = await supabase
     .from('bookings')
-    .select('*')
+    .select(`
+      *,
+      customers:customer_id (
+        id,
+        full_name,
+        email,
+        phone
+      ),
+      vehicles:vehicle_id (
+        id,
+        make,
+        model,
+        year,
+        trim,
+        plate_number
+      )
+    `)
     .eq('branch_id', branchId)
     .order('preferred_date', { ascending: true })
     .order('preferred_time', { ascending: true });
-
-  // Apply status filter
-  if (filters.status) {
-    query = query.eq('status', filters.status);
-  }
-
-  // Apply date filter
-  if (filters.date) {
-    query = query.eq('preferred_date', filters.date);
-  }
-
-  const { data, error } = await query;
 
   if (error) {
     console.error('Error fetching branch bookings:', error);
     return { success: false, error };
   }
 
-  return { success: true, data };
+  // Apply filters in JavaScript
+  let filteredData = data || [];
+  
+  if (filters.status) {
+    filteredData = filteredData.filter(b => b.status === filters.status);
+  }
+
+  if (filters.date) {
+    filteredData = filteredData.filter(b => b.preferred_date === filters.date);
+  }
+
+  return { success: true, data: filteredData };
 }
 
 /**

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { locations } from '../data/mockData';
+import Icon from './Icon';
 
 // Hero slides showcasing different branches
 const heroSlides = [
@@ -63,35 +64,11 @@ const heroSlides = [
 ];
 
 const CTAIcons = {
-  calendar: (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-      <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-    </svg>
-  ),
-  map: (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-      <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-      <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-    </svg>
-  ),
-  tag: (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-      <path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-    </svg>
-  ),
-  card: (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-      <rect x="2" y="5" width="20" height="14" rx="2" />
-      <path d="M2 10h20" />
-    </svg>
-  ),
-  target: (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="9" />
-      <circle cx="12" cy="12" r="5" />
-      <circle cx="12" cy="12" r="1" />
-    </svg>
-  )
+  calendar: <Icon name="calendar" size="sm" />,
+  mapPin: <Icon name="mapPin" size="sm" />,
+  tag: <Icon name="tag" size="sm" />,
+  creditCard: <Icon name="creditCard" size="sm" />,
+  target: <Icon name="target" size="sm" />,
 };
 
 function HeroSection() {
@@ -198,10 +175,7 @@ function HeroSection() {
 
               {/* Hours */}
               <div className="flex items-center gap-2 text-brand-textDim text-sm mt-6 animate-fade-up animate-fade-up-4">
-                <svg className="w-4 h-4 text-brand-yellow flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="M12 7v5l3 3" />
-                </svg>
+                <Icon name="clock" size="sm" className="text-brand-yellow flex-shrink-0" />
                 <span>{slide.validity}</span>
               </div>
             </div>

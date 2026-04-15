@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { services, locations } from '../data/mockData';
+import Icon from './Icon';
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -93,9 +94,7 @@ function Header() {
             onMouseLeave={() => setActiveDropdown(null)}
           >
             Services
-            <svg className="w-3 h-3 inline-block ml-1 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M19 9l-7 7-7-7" />
-            </svg>
+            <Icon name="chevronDown" size="xs" className="inline-block ml-1 transition-transform group-hover:rotate-180" />
             
             {/* Services Dropdown */}
             <div className="absolute top-full left-0 mt-2 w-64 bg-brand-card border border-brand-border rounded-lg shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform group-hover:translate-y-0 translate-y-2 z-50">
@@ -107,10 +106,7 @@ function Header() {
                     className="flex items-center gap-3 px-4 py-3 hover:bg-brand-raised transition-colors border-b border-brand-border/50 last:border-0"
                   >
                     <div className="w-8 h-8 bg-brand-yellow/20 rounded-md flex items-center justify-center flex-shrink-0">
-                      <svg className="w-4 h-4 text-brand-yellow" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                        <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
+                      <Icon name="settings" size="sm" className="text-brand-yellow" />
                     </div>
                     <div>
                       <div className="text-white text-sm font-semibold">{service.name}</div>
@@ -131,9 +127,7 @@ function Header() {
             onMouseLeave={() => setActiveDropdown(null)}
           >
             Branches
-            <svg className="w-3 h-3 inline-block ml-1 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M19 9l-7 7-7-7" />
-            </svg>
+            <Icon name="chevronDown" size="xs" className="inline-block ml-1 transition-transform group-hover:rotate-180" />
             
             {/* Branches Dropdown */}
             <div className="absolute top-full left-0 mt-2 w-72 bg-brand-card border border-brand-border rounded-lg shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform group-hover:translate-y-0 translate-y-2 z-50">
@@ -145,10 +139,7 @@ function Header() {
                     className="flex items-start gap-3 px-4 py-3 hover:bg-brand-raised transition-colors border-b border-brand-border/50 last:border-0"
                   >
                     <div className="w-8 h-8 bg-brand-yellow/20 rounded-md flex items-center justify-center flex-shrink-0">
-                      <svg className="w-4 h-4 text-brand-yellow" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
+                      <Icon name="mapPin" size="sm" className="text-brand-yellow" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-white text-sm font-semibold truncate">{location.name}</div>
@@ -190,9 +181,7 @@ function Header() {
                 className="flex items-center gap-2 bg-white/10 text-white px-4 py-2.5 rounded-md font-display font-semibold text-sm tracking-wide hover:bg-white/20 transition-all border border-white/20 hover:border-brand-yellow"
                 title="Install HH Asia Tyre App"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H8l4-4 4 4h-3v4h-2z"/>
-                </svg>
+                <Icon name="download" size="sm" />
                 <span>Install App</span>
               </button>
               <button
@@ -200,9 +189,7 @@ function Header() {
                 className="text-brand-textMuted hover:text-white p-1 transition-colors"
                 title="Dismiss"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path d="M6 18L18 6M6 6l12 12"/>
-                </svg>
+                <Icon name="x" size="sm" />
               </button>
             </div>
           )}
@@ -221,13 +208,7 @@ function Header() {
           className="lg:hidden text-white p-2"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            {isMenuOpen ? (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            )}
-          </svg>
+          {isMenuOpen ? <Icon name="x" size="lg" /> : <Icon name="menu" size="lg" />}
         </button>
       </nav>
 
@@ -241,9 +222,7 @@ function Header() {
               onClick={() => setActiveDropdown(activeDropdown === 'mobile-services' ? null : 'mobile-services')}
             >
               <span>Services</span>
-              <svg className={`w-4 h-4 transition-transform ${activeDropdown === 'mobile-services' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M19 9l-7 7-7-7" />
-              </svg>
+              <Icon name="chevronDown" size="sm" className={`transition-transform ${activeDropdown === 'mobile-services' ? 'rotate-180' : ''}`} />
             </button>
             {activeDropdown === 'mobile-services' && (
               <div className="pl-4 space-y-2 mt-2">
@@ -263,9 +242,7 @@ function Header() {
               onClick={() => setActiveDropdown(activeDropdown === 'mobile-locations' ? null : 'mobile-locations')}
             >
               <span>Branches</span>
-              <svg className={`w-4 h-4 transition-transform ${activeDropdown === 'mobile-locations' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M19 9l-7 7-7-7" />
-              </svg>
+              <Icon name="chevronDown" size="sm" className={`transition-transform ${activeDropdown === 'mobile-locations' ? 'rotate-180' : ''}`} />
             </button>
             {activeDropdown === 'mobile-locations' && (
               <div className="pl-4 space-y-2 mt-2">
@@ -288,9 +265,7 @@ function Header() {
               onClick={handleInstallClick}
               className="flex items-center justify-center gap-2 mt-4 bg-white/10 text-white px-6 py-3 rounded-md font-display font-semibold uppercase tracking-wider border border-white/20 hover:bg-white/20 transition-all"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H8l4-4 4 4h-3v4h-2z"/>
-              </svg>
+              <Icon name="download" size="md" />
               <span>Install App</span>
             </button>
           )}

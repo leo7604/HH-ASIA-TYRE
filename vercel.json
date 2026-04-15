@@ -14,13 +14,5 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ],
-  "env": {
-    "NOTE": "Environment variables must be set in Vercel Dashboard",
-    "REQUIRED_VARIABLES": [
-      "VITE_SUPABASE_URL",
-      "VITE_SUPABASE_ANON_KEY"
-    ],
-    "INSTRUCTIONS": "Go to Vercel Dashboard > Settings > Environment Variables and add the Supabase credentials"
-  }
+  ]
 }

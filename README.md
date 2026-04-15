@@ -208,6 +208,35 @@ GA4 tracking is integrated into the project. To enable it:
 6. **Images**: Replace stock images with real photos
 7. **Testing**: Cross-browser and device testing
 
+## 🔐 Environment Variables
+
+### Required for Production (Vercel)
+
+When deploying to Vercel, you must add these environment variables in the Vercel Dashboard:
+
+**Settings → Environment Variables**
+
+| Variable Name | Value | Environments |
+|---------------|-------|--------------|
+| `VITE_SUPABASE_URL` | `https://knghsmttizcoecgwyfdk.supabase.co` | Production, Preview, Development |
+| `VITE_SUPABASE_ANON_KEY` | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtuZ2hzbXR0aXpjb2VjZ3d5ZmRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNDY1OTAsImV4cCI6MjA5MDkyMjU5MH0.MxkQZ01wIqP12o-B6_yfsUqW51WNbyP_sexOLI1ziOY` | Production, Preview, Development |
+
+### Local Development
+
+For local development, create a `.env` file (already in `.gitignore`):
+
+```bash
+VITE_SUPABASE_URL=https://knghsmttizcoecgwyfdk.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
+
+### After Adding Variables
+
+1. Go to **Deployments** tab
+2. Click **...** on latest deployment
+3. Select **Redeploy**
+4. Wait 1-2 minutes for build
+
 ## 📄 License
 
 This is a prototype project for HH Asia Tyre Alliance Plus+.

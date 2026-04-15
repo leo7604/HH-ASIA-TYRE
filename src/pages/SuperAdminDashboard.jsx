@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { locations } from '../data/mockData';
 import {
   getAllBranchAdminsSupabase,
@@ -9,9 +10,11 @@ import {
 } from '../utils/supabase';
 
 function SuperAdminDashboard() {
+  const navigate = useNavigate();
   const [branchAdmins, setBranchAdmins] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingAdmin, setEditingAdmin] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -22,10 +25,39 @@ function SuperAdminDashboard() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // Check authentication on mount
+  useEffect(() => {
+    const session = localStorage.getItem('superadmin_session');
+    if (!session) {
+      // Not logged in, redirect to login
+      navigate('/super-admin/login');
+      return;
+    }
+    
+    try {
+      const userData = JSON.parse(session);
+      setCurrentUser(userData);
+    } catch (err) {
+      console.error('Invalid session:', err);
+      localStorage.removeItem('superadmin_session');
+      navigate('/super-admin/login');
+    }
+  }, [navigate]);
+
   // Load branch admins on mount
   useEffect(() => {
-    loadBranchAdmins();
-  }, []);
+    if (currentUser) {
+      loadBranchAdmins();
+    }
+  }, [currentUser]);
+
+  const handleLogout = () => {
+    // Clear session
+    localStorage.removeItem('superadmin_session');
+    
+    // Redirect to login
+    navigate('/super-admin/login');
+  };
 
   const loadBranchAdmins = async () => {
     try {
@@ -264,6 +296,17 @@ function SuperAdminDashboard() {
               </p>
             </div>
             <div className="flex items-center gap-4">
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-semibold transition-colors"
+              >
+                Logout
+              </button>
+              {currentUser && (
+                <div className="text-sm text-brand-textMuted">
+                  {currentUser.fullName}
+                </div>
+              )}
               <a
                 href="/"
                 className="px-4 py-2 bg-brand-raised hover:bg-brand-border text-white rounded-md text-sm font-semibold transition-colors"

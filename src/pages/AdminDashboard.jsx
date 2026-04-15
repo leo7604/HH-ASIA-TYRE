@@ -3,7 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { locations } from '../data/mockData';
 import CalendarView from '../components/CalendarView';
 import { useToast } from '../components/ToastProvider';
-import { getBranchBookings, updateBookingStatus } from '../utils/supabase';
+import { 
+  getBranchBookings, 
+  updateBookingStatus,
+  updateBooking,
+  deleteBooking as deleteBookingFromSupabase,
+  approveBooking,
+  rejectBooking,
+  completeBooking
+} from '../utils/supabase';
 
 // Branch ID to branch code mapping for API sync
 const BRANCH_ID_TO_CODE = {
@@ -111,37 +119,55 @@ function AdminDashboard() {
     console.log('Updating appointment status:', { appointmentId, newStatus });
     
     const allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
-    console.log('Total appointments before update:', allAppointments.length);
+    const appointment = allAppointments.find(apt => apt.id === appointmentId);
     
+    if (!appointment) {
+      toast.error('Appointment not found');
+      return;
+    }
+    
+    // Update in Supabase FIRST
+    try {
+      let updates = { status: newStatus };
+      
+      if (bayId !== null && bayId !== undefined) updates.bay_id = bayId;
+      if (bayName !== null && bayName !== undefined) updates.bay_name = bayName;
+      if (newStatus === 'approved') {
+        updates.confirmed_at = new Date().toISOString();
+      }
+      if (newStatus === 'completed') {
+        updates.completed_at = new Date().toISOString();
+      }
+      if (newStatus === 'rejected') {
+        updates.admin_notes = 'Rejected by admin';
+      }
+      
+      const result = await updateBookingStatus(appointmentId, updates);
+      console.log('Supabase update result:', result.success ? 'SUCCESS' : 'FAILED');
+      
+      if (!result.success) {
+        console.error('Supabase update failed:', result.error);
+        toast.error('Failed to update database');
+        return;
+      }
+    } catch (err) {
+      console.error('Error updating Supabase:', err);
+      toast.error('Error updating database');
+      return;
+    }
+    
+    // Update local state
     const updated = allAppointments.map(apt => {
       if (apt.id === appointmentId) {
-        console.log('Found appointment to update:', apt);
         return { ...apt, status: newStatus, bayId: bayId || apt.bayId, bayName: bayName || apt.bayName };
       }
       return apt;
     });
     
-    console.log('Total appointments after update:', updated.length);
-    console.log('Updated appointment:', updated.find(apt => apt.id === appointmentId));
-    
     localStorage.setItem('appointments', JSON.stringify(updated));
     setAppointments(updated);
-    
-    // Also update in Supabase
-    try {
-      const appointment = allAppointments.find(apt => apt.id === appointmentId);
-      if (appointment && appointment.branchId) {
-        const updates = { 
-          status: newStatus,
-          bay_id: bayId || appointment.bayId || null,
-          bay_name: bayName || appointment.bayName || null
-        };
-        const result = await updateBookingStatus(appointmentId, updates);
-        console.log('Supabase update result:', result.success ? 'SUCCESS' : 'FAILED');
-      }
-    } catch (err) {
-      console.error('Error updating Supabase:', err);
-    }
+    setFilter('all');
+    console.log('Appointment updated successfully');
   };
 
   const initiateApproval = (id) => {
@@ -346,7 +372,36 @@ function AdminDashboard() {
     });
   };
 
-  const saveEdit = (appointmentId) => {
+  const saveEdit = async (appointmentId) => {
+    // Update in Supabase FIRST
+    try {
+      // Map edit form to database fields
+      const updates = {};
+      if (editForm.customerName) updates.customer_name = editForm.customerName;
+      if (editForm.email) updates.email = editForm.email;
+      if (editForm.phone) updates.phone = editForm.phone;
+      if (editForm.vehicleMake) updates.vehicle_make = editForm.vehicleMake;
+      if (editForm.vehicleModel) updates.vehicle_model = editForm.vehicleModel;
+      if (editForm.vehicleYear) updates.vehicle_year = editForm.vehicleYear;
+      if (editForm.services) updates.services = editForm.services;
+      if (editForm.notes) updates.customer_concern = editForm.notes;
+      if (editForm.date) updates.preferred_date = editForm.date;
+      if (editForm.time) updates.preferred_time = editForm.time;
+      
+      const result = await updateBooking(appointmentId, updates);
+      if (!result.success) {
+        console.error('Failed to update in Supabase:', result.error);
+        toast.error('Failed to update booking');
+        return;
+      }
+      console.log('Updated in Supabase successfully');
+    } catch (err) {
+      console.error('Error updating in Supabase:', err);
+      toast.error('Error updating booking');
+      return;
+    }
+    
+    // Update local state
     const allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
     const updated = allAppointments.map(apt => 
       apt.id === appointmentId ? { ...apt, ...editForm } : apt
@@ -355,6 +410,7 @@ function AdminDashboard() {
     setEditingAppointment(null);
     setEditForm({});
     setAppointments(updated);
+    toast.success('Booking updated successfully');
   };
 
   const cancelEdit = () => {
@@ -362,11 +418,27 @@ function AdminDashboard() {
     setEditForm({});
   };
 
-  const deleteAppointment = (id) => {
+  const deleteAppointment = async (id) => {
     if (!confirm('Are you sure you want to delete this booking? This action cannot be undone.')) {
       return;
     }
     
+    // Delete from Supabase FIRST
+    try {
+      const result = await deleteBookingFromSupabase(id);
+      if (!result.success) {
+        console.error('Failed to delete from Supabase:', result.error);
+        toast.error('Failed to delete from database');
+        return;
+      }
+      console.log('Deleted from Supabase successfully');
+    } catch (err) {
+      console.error('Error deleting from Supabase:', err);
+      toast.error('Error deleting from database');
+      return;
+    }
+    
+    // Update local state
     const allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
     const updated = allAppointments.filter(apt => apt.id !== id);
     localStorage.setItem('appointments', JSON.stringify(updated));

@@ -59,7 +59,7 @@ function BookingPage() {
       : [];
 
   // Get selected branch details
-  const selectedBranchDetails = locations.find(l => l.id === bookingData.selectedLocation);
+  const selectedBranchDetails = locations.find(l => l.id === parseInt(bookingData.selectedLocation, 10));
 
   // If branch is preselected from URL, start at step 2 (vehicle details)
   useEffect(() => {

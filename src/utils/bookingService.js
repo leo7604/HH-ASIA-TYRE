@@ -7,7 +7,7 @@
 import { post, get, ENDPOINTS } from './api';
 
 // Maximum bookings allowed per time slot per branch
-const MAX_BOOKINGS_PER_SLOT = 4;
+const MAX_BOOKINGS_PER_SLOT = 1;
 
 /**
  * Create a new booking

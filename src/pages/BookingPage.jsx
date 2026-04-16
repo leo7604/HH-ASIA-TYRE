@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { locations, vehicleMakes, timeSlots, services } from '../data/mockData';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { MAX_BOOKINGS_PER_SLOT } from '../utils/bookingService';
-import { createBooking } from '../utils/supabase';
+import { createBooking, checkSlotAvailability } from '../utils/apiClient';
 
 function BookingPage() {
   const navigate = useNavigate();
@@ -248,43 +248,39 @@ function BookingPage() {
       const branchCode = branchCodeMap[bookingData.selectedLocation] || 'MNL';
       const formattedDate = selectedDate.toISOString().split('T')[0];
       
-      const apiPayload = {
-        customerName: bookingData.fullName,
-        phone: bookingData.phone,
-        email: bookingData.email,
-        service: bookingData.selectedServices[0] || '',  // Primary service for Team B's auto-checkbox
-        serviceType: bookingData.selectedServices.join(', '),  // All services for display
-        vehicleMake: bookingData.vehicleMake,
-        vehicleModel: bookingData.vehicleModel,
-        vehicleYear: bookingData.vehicleYear,
-        plateNumber: bookingData.plateNumber,
-        preferredDate: formattedDate,
-        preferredTime: bookingData.selectedTime,
-        branchId: parseInt(bookingData.selectedLocation),  // Use branchId to match database schema
-        notes: bookingData.specialRequests || '',
-      };
-      
+      // Use apiClient to create booking (goes to same database as admin panel)
       let apiResponse = null;
       let apiSuccess = false;
       
       try {
-        const response = await fetch('https://hh-asia-tyre-crm-inv-sys.vercel.app/api/public/bookings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(apiPayload),
+        const result = await createBooking({
+          full_name: bookingData.fullName,
+          email: bookingData.email,
+          phone: bookingData.phone,
+          vehicle_make: bookingData.vehicleMake,
+          vehicle_model: bookingData.vehicleModel,
+          vehicle_year: parseInt(bookingData.vehicleYear),
+          plate_number: bookingData.plateNumber,
+          preferred_date: formattedDate,
+          preferred_time: bookingData.selectedTime,
+          services: bookingData.selectedServices,
+          other_services: bookingData.otherServices || null,
+          customer_concern: bookingData.specialRequests || null,
+          branch_id: branchCode, // Use Team A branch code (MNL, LAO, QC)
+          source: 'website',
         });
         
-        const result = await response.json();
-        
-        if (response.ok) {
+        if (result.success) {
           apiSuccess = true;
-          apiResponse = result;
-          console.log('Booking created successfully via API:', result);
+          apiResponse = result.data;
+          console.log('✅ Booking created successfully via API:', result.data);
         } else {
-          console.warn('API booking failed, saving locally:', result.error);
+          console.error('❌ API booking failed:', result.error);
+          throw new Error(result.error || 'Booking creation failed');
         }
       } catch (apiError) {
-        console.warn('API unavailable, saving booking locally:', apiError.message);
+        console.error('❌ API error:', apiError.message);
+        throw apiError;
       }
       
       const appointment = {
@@ -326,38 +322,7 @@ function BookingPage() {
       existingAppointments.push(appointment);
       localStorage.setItem('appointments', JSON.stringify(existingAppointments));
       
-      // Save to Supabase database
-      try {
-        const branchId = parseInt(bookingData.selectedLocation);
-        const supabaseBookingData = {
-          branch_id: branchId,
-          full_name: bookingData.fullName,
-          email: bookingData.email,
-          phone: bookingData.phone,
-          vehicle_make: bookingData.vehicleMake,
-          vehicle_model: bookingData.vehicleModel,
-          vehicle_year: parseInt(bookingData.vehicleYear),
-          vehicle_trim: bookingData.vehicleTrim || null,
-          plate_number: bookingData.plateNumber,
-          preferred_date: bookingData.selectedDate,
-          preferred_time: bookingData.selectedTime,
-          services: bookingData.selectedServices,
-          other_services: bookingData.otherServices || null,
-          customer_concern: bookingData.specialRequests || null,
-          source: 'website',
-        };
-        
-        const supabaseResult = await createBooking(supabaseBookingData);
-        
-        if (supabaseResult.success) {
-          console.log('Booking saved to Supabase:', supabaseResult.data);
-        } else {
-          console.warn('Supabase save failed (booking still saved locally):', supabaseResult.error);
-        }
-      } catch (supabaseError) {
-        console.warn('Supabase save failed:', supabaseError.message);
-        // Don't throw - booking is still saved to localStorage
-      }
+      // Booking already saved via API above - no need to save again!
       
       setShowSuccess(true);
       setTimeout(() => {

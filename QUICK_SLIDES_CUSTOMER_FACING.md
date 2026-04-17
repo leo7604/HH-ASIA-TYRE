@@ -77,7 +77,14 @@ THE SOLUTION
    • Double booking prevention
    • Instant confirmation
 
-3. MOBILE-FIRST DESIGN
+3. CRM & INVENTORY INTEGRATION
+   • Customer data sync
+   • Vehicle history tracking
+   • Real-time stock management
+   • Product availability
+   • Service-product linking
+
+4. MOBILE-FIRST DESIGN
    • Works on all devices
    • Progressive Web App
    • Fast loading
@@ -297,35 +304,7 @@ Feedback:
 
 ---
 
-## SLIDE 13: CRM & INVENTORY
-```
-CRM & INVENTORY INTEGRATION
-
-CRM Features:
-✓ Customer data sync
-✓ Vehicle history tracking
-✓ Booking status updates
-✓ Automated notifications
-✓ Customer lifetime value
-
-Inventory Management:
-✓ Real-time stock tracking
-✓ Product availability display
-✓ Low stock alerts
-✓ Service-product linking
-✓ Multi-branch inventory
-
-Integration Flow:
-1. Customer books service
-2. System checks inventory
-3. Updates stock levels
-4. Syncs with CRM
-5. Tracks service history
-```
-
----
-
-## SLIDE 14: TECHNICAL HIGHLIGHTS
+## SLIDE 13: TECHNICAL HIGHLIGHTS
 ```
 TECHNICAL ACHIEVEMENTS
 
@@ -352,7 +331,7 @@ Security: Environment variables, secure auth, input validation
 
 ---
 
-## SLIDE 15: LIVE DEMO
+## SLIDE 14: LIVE DEMO
 ```
 LIVE DEMONSTRATION
 
@@ -381,7 +360,7 @@ Complete Customer Journey:
 
 ---
 
-## SLIDE 16: CONCLUSION
+## SLIDE 15: CONCLUSION
 ```
 CONCLUSION
 
@@ -404,7 +383,7 @@ Thank You! Questions?
 
 ---
 
-## 📸 SCREENSHOTS NEEDED (Customer-Facing + Integration):
+## 📸 SCREENSHOTS NEEDED (Customer-Facing):
 
 **Landing Page (8 screenshots):**
 1. Homepage with hero slider
@@ -425,19 +404,13 @@ Thank You! Questions?
 14. Step 6: Review & confirm
 15. Success page
 
-**CRM & Inventory (4 screenshots):**
-16. Customer profile/history view
-17. Vehicle service history
-18. Product inventory display
-19. Stock level indicators
-
 **Mobile Views (4 screenshots):**
-20. Homepage (mobile)
-21. Booking form (mobile)
-22. Time slots (mobile)
-23. Confirmation (mobile)
+16. Homepage (mobile)
+17. Booking form (mobile)
+18. Time slots (mobile)
+19. Confirmation (mobile)
 
-**Total: 23 screenshots** (including CRM/Inventory views)
+**Total: 19 screenshots**
 
 ---
 
@@ -451,12 +424,10 @@ Thank You! Questions?
 - Slide 11 (Mobile): 1 minute
 - Slide 12 (UX): 30 seconds
 - Slide 13 (Technical): 30 seconds
-- Slide 13 (CRM/Inventory): 1 minute
-- Slide 14 (Technical): 30 seconds
-- Slide 15 (Live Demo): 3 minutes
-- Slide 16 (Conclusion): 30 seconds
+- Slide 14 (Live Demo): 3 minutes
+- Slide 15 (Conclusion): 30 seconds
 
-**Total: ~13 minutes**
+**Total: ~12 minutes**
 
 ---
 

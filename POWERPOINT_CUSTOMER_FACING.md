@@ -120,7 +120,14 @@ What We Built:
    • Double booking prevention
    • Instant confirmation
 
-3. MOBILE-FIRST DESIGN
+3. CRM & INVENTORY INTEGRATION
+   • Customer data synchronization
+   • Vehicle history tracking
+   • Real-time stock management
+   • Product availability display
+   • Service-to-product linking
+
+4. MOBILE-FIRST DESIGN
    • Works on all devices
    • Progressive Web App
    • Fast loading
@@ -128,9 +135,9 @@ What We Built:
 
 Key Innovation:
 • AI-assisted development with Qwen
+• Database integration (Supabase + CRM)
 • Real-time slot validation
 • Philippine timezone support
-• Branch-specific availability
 ```
 
 ### **Screenshot Needed:**
@@ -447,51 +454,7 @@ Accessibility:
 
 ---
 
-## **SLIDE 13: CRM & INVENTORY INTEGRATION**
-
-### **Content:**
-```
-INTEGRATION FEATURES
-
-CRM Integration:
-✓ Customer data synchronization
-✓ Vehicle history tracking
-✓ Booking status updates
-✓ Automated notifications
-✓ Customer lifetime value
-
-Inventory Management:
-✓ Real-time stock tracking
-✓ Product availability display
-✓ Low stock alerts
-✓ Service-to-product linking
-✓ Multi-branch inventory
-
-How It Works:
-1. Customer books service
-2. System checks inventory
-3. Updates stock levels
-4. Syncs with CRM
-5. Tracks service history
-
-Benefits:
-• Accurate stock information
-• Better customer service
-• Data-driven decisions
-• Streamlined operations
-```
-
-### **Screenshot Needed:**
-- Show integration flow:
-  - Booking → CRM sync
-  - Inventory check
-  - Stock level display
-  - Customer history view
-  - Service-product linking
-
----
-
-## **SLIDE 14: TECHNICAL ACHIEVEMENTS**
+## **SLIDE 13: TECHNICAL ACHIEVEMENTS**
 
 ### **Content:**
 ```
@@ -531,7 +494,7 @@ Security:
 
 ---
 
-## **SLIDE 15: LIVE DEMONSTRATION**
+## **SLIDE 14: LIVE DEMONSTRATION**
 
 ### **Content:**
 ```
@@ -571,7 +534,7 @@ Watch the full customer journey:
 
 ---
 
-## **SLIDE 16: CONCLUSION**
+## **SLIDE 15: CONCLUSION**
 
 ### **Content:**
 ```
@@ -684,10 +647,10 @@ Questions?
 
 ---
 
-**Total Slides:** 16  
-**Presentation Time:** 12-13 minutes  
+**Total Slides:** 15  
+**Presentation Time:** 12 minutes  
 **Demo Time:** 3 minutes  
-**Focus:** Customer-facing + CRM/Inventory integration  
+**Focus:** Customer-facing with CRM/Inventory database integration  
 **Excluded:** Admin dashboards (as requested)
 
 **Good luck with your presentation! 🚀✨**

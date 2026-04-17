@@ -69,7 +69,7 @@ THE SOLUTION
    • Hero slider with promotions
    • Services showcase
    • Branch locations
-   • Customer testimonials
+   • Testimonials & reviews
 
 2. GUIDED BOOKING FLOW
    • 6 simple steps
@@ -130,91 +130,116 @@ Key Innovation:
 
 ---
 
-## SLIDE 6: BOOKING DEMO - PART 1
+## SLIDE 6: LANDING PAGE - HERO & PROMOTIONS
 ```
-LANDING PAGE FEATURES
+LANDING PAGE: HERO SECTION
 
-Promotions Section:
-• Current deals and offers
-• Seasonal promotions
-• Service packages
-• Clear validity dates
+Features:
+✓ Eye-catching slider with promotions
+✓ Clear "Book Now" call-to-action
+✓ Contact information visible
+✓ Professional branding
 
-Services Grid:
-• Tire Installation & Rotation
-• Oil Change Service
-• Brake Inspection
-• Battery Replacement
-
-Branch Finder:
-• Filter by region
-• View branch details
-• Contact information
-• Branch-specific images
-
-Gallery & Reviews:
-• Service photos
-• Customer testimonials
-• Trust signals
+Screenshot:
+• Full homepage hero section
+• Show promotions slider
+• Highlight "Book Now" button
 ```
 
 ---
 
-## SLIDE 7: BOOKING DEMO - PART 2
+## SLIDE 7: LANDING PAGE - SERVICES & BRANCHES
 ```
-BOOKING DEMO: Getting Started
+LANDING PAGE: SERVICES & BRANCHES
+
+Services Section:
+✓ 6+ automotive services
+✓ Service icons and descriptions
+✓ Price range estimates
+
+Branch Locations:
+✓ All 6 branches with images
+✓ Region filtering (Manila vs Laoag)
+✓ Contact details and hours
+
+Screenshot:
+• Services grid view
+• Branch cards with images
+```
+
+---
+
+## SLIDE 8: LANDING PAGE - TESTIMONIALS & GALLERY
+```
+LANDING PAGE: SOCIAL PROOF
+
+Testimonials:
+✓ Customer reviews
+✓ Star ratings
+✓ Trust signals
+
+Gallery:
+✓ Service photos
+✓ Workshop images
+✓ Professional quality
+
+Screenshot:
+• Testimonials section
+• Gallery grid
+```
+
+---
+
+## SLIDE 9: HOW TO BOOK - STEPS 1-3
+```
+HOW TO BOOK: Getting Started
 
 Step 1: Select Branch
 • Choose region (Manila/Laoag)
 • View branch details
-• See operating hours
 
 Step 2: Enter Vehicle
 • Year, make, model
 • Plate number
-• Vehicle type
 
 Step 3: Choose Services
 • Multi-select services
-• See descriptions
-• View durations
-• See price ranges
+• See descriptions and prices
 
-✓ Clear instructions
-✓ Progress tracking
-✓ Easy navigation
+Screenshots:
+• Branch selection page
+• Vehicle details form
+• Service selection with checkboxes
 ```
 
 ---
 
-## SLIDE 8: MOBILE EXPERIENCE
+## SLIDE 10: HOW TO BOOK - STEPS 4-6
 ```
-BOOKING DEMO: Complete Booking
+HOW TO BOOK: Complete Booking
 
 Step 4: Pick Date & Time
 • Calendar date picker
 • Color-coded availability
-• Prevents past times
+  🟢 Available | 🟡 Limited | 🔴 Full
 
 Step 5: Customer Information
 • Name and contact
 • Email and phone
-• Special requests
 
 Step 6: Review & Confirm
 • Complete summary
-• All details visible
-• Instant reference
+• Instant reference number
 
-Result:
-✅ Booking saved
-✅ Reference: BK-YYYYMMDD-XXX
-✅ Confirmation displayed
+Screenshots:
+• Date/time picker with colors
+• Customer info form
+• Success page with reference
 ```
 
 ---
 
-## SLIDE 9: USER EXPERIENCE
+## SLIDE 11: MOBILE EXPERIENCE
 ```
 MOBILE-FIRST DESIGN
 
@@ -222,105 +247,22 @@ Progressive Web App (PWA):
 ✓ Installable on mobile
 ✓ Works offline
 ✓ App-like experience
-✓ Auto updates
 
 Responsive Design:
 ✓ Desktop optimized
 ✓ Tablet friendly
 ✓ Mobile optimized
-✓ Touch-friendly
+• Touch-friendly buttons
 
-Mobile Benefits:
-• Book from anywhere
-• No app store needed
-• Always up-to-date
-• Native app feel
-```
-
----
-
-## SLIDE 10: TECHNICAL HIGHLIGHTS
-```
-USER EXPERIENCE HIGHLIGHTS
-
-Visual Design:
-• Clean, modern interface
-• Professional branding
-• Consistent colors
-• High-quality images
-
-Navigation:
-• Clear menu structure
-• Easy to find info
-• Back button support
-• Breadcrumb trail
-
-Feedback:
-• Real-time validation
-• Clear error messages
-• Success confirmations
-• Loading indicators
-```
-
----
-
-## SLIDE 11: LIVE DEMO
-```
-TECHNICAL ACHIEVEMENTS
-
-Frontend:
-• React 18 + Vite 5
-• Component-based design
-• Reusable UI elements
-• Efficient state management
-
-Database:
-• Supabase PostgreSQL
-• CRM API integration
-• Inventory sync
-• Real-time updates
-
-Performance:
-• Fast page loads (<3 sec)
-• Optimized bundle size
-• Lazy loading
-• Image optimization
-
-Security: Environment variables, secure auth, input validation
+Screenshots:
+• Homepage (mobile view)
+• Booking form (mobile)
+• Time slots (mobile)
 ```
 
 ---
 
 ## SLIDE 12: CONCLUSION
-```
-LIVE DEMONSTRATION
-
-Complete Customer Journey:
-
-1️⃣ Browse landing page
-   • View promotions
-   • Explore services
-   • Check locations
-
-2️⃣ Start booking
-   • Click "Book Now"
-   • Select branch
-   • Enter vehicle
-
-3️⃣ Complete booking
-   • Choose services
-   • Pick date & time
-   • Add customer info
-   • Review & confirm
-
-4️⃣ Get confirmation
-   • See reference number
-   • Booking complete!
-```
-
----
-
-**Total: 19 screenshots**
 ```
 CONCLUSION
 
@@ -330,11 +272,9 @@ Achievements:
 ✅ Real-time availability
 ✅ Multi-branch support
 ✅ Mobile-responsive PWA
-✅ Production-ready
 
 Impact:
 • Improved customer experience
-• Reduced booking abandonment
 • Efficient online booking
 • Professional web presence
 
@@ -370,7 +310,7 @@ Thank You! Questions?
 18. Time slots (mobile)
 19. Confirmation (mobile)
 
-**Total: 12 slides**
+**Total: 19 screenshots**
 
 ---
 
@@ -379,15 +319,15 @@ Thank You! Questions?
 - Slides 1-2 (Intro): 30 seconds
 - Slide 3 (Problem): 1 minute
 - Slide 4 (Solution): 1 minute
-- Slide 5 (Key Features): 2 minutes
-- Slides 6-7 (Demo): 3 minutes
-- Slide 8 (Mobile): 1 minute
-- Slide 9 (UX): 30 seconds
-- Slide 10 (Technical): 30 seconds
-- Slide 11 (Live Demo): 3 minutes
+- Slide 5 (Key Features): 1.5 minutes
+- Slide 6 (Hero Section): 30 seconds
+- Slide 7 (Services & Branches): 30 seconds
+- Slide 8 (Testimonials & Gallery): 30 seconds
+- Slides 9-10 (How to Book): 3 minutes
+- Slide 11 (Mobile): 1 minute
 - Slide 12 (Conclusion): 30 seconds
 
-**Total: ~13 minutes**
+**Total: ~12 minutes**
 
 ---
 

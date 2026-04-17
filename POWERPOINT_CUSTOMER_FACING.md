@@ -447,7 +447,51 @@ Accessibility:
 
 ---
 
-## **SLIDE 13: TECHNICAL ACHIEVEMENTS**
+## **SLIDE 13: CRM & INVENTORY INTEGRATION**
+
+### **Content:**
+```
+INTEGRATION FEATURES
+
+CRM Integration:
+✓ Customer data synchronization
+✓ Vehicle history tracking
+✓ Booking status updates
+✓ Automated notifications
+✓ Customer lifetime value
+
+Inventory Management:
+✓ Real-time stock tracking
+✓ Product availability display
+✓ Low stock alerts
+✓ Service-to-product linking
+✓ Multi-branch inventory
+
+How It Works:
+1. Customer books service
+2. System checks inventory
+3. Updates stock levels
+4. Syncs with CRM
+5. Tracks service history
+
+Benefits:
+• Accurate stock information
+• Better customer service
+• Data-driven decisions
+• Streamlined operations
+```
+
+### **Screenshot Needed:**
+- Show integration flow:
+  - Booking → CRM sync
+  - Inventory check
+  - Stock level display
+  - Customer history view
+  - Service-product linking
+
+---
+
+## **SLIDE 14: TECHNICAL ACHIEVEMENTS**
 
 ### **Content:**
 ```
@@ -459,11 +503,11 @@ Frontend Architecture:
 • Reusable UI elements
 • Efficient state management
 
-Database Integration:
+Backend Integration:
 • Supabase PostgreSQL
-• Real-time data sync
-• Row Level Security
-• Optimized queries
+• CRM API integration
+• Inventory sync
+• Real-time data updates
 
 Performance:
 • Fast page loads (<3 seconds)
@@ -482,12 +526,12 @@ Security:
 - Technical showcase:
   - Vercel deployment dashboard
   - Database schema overview
+  - API integration flow
   - Performance metrics (if available)
-  - Code structure (file tree)
 
 ---
 
-## **SLIDE 14: LIVE DEMONSTRATION**
+## **SLIDE 15: LIVE DEMONSTRATION**
 
 ### **Content:**
 ```
@@ -527,7 +571,7 @@ Watch the full customer journey:
 
 ---
 
-## **SLIDE 15: CONCLUSION**
+## **SLIDE 16: CONCLUSION**
 
 ### **Content:**
 ```
@@ -640,10 +684,10 @@ Questions?
 
 ---
 
-**Total Slides:** 15  
-**Presentation Time:** 10-12 minutes  
+**Total Slides:** 16  
+**Presentation Time:** 12-13 minutes  
 **Demo Time:** 3 minutes  
-**Focus:** 100% customer-facing features  
+**Focus:** Customer-facing + CRM/Inventory integration  
 **Excluded:** Admin dashboards (as requested)
 
 **Good luck with your presentation! 🚀✨**

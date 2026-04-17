@@ -297,7 +297,35 @@ Feedback:
 
 ---
 
-## SLIDE 13: TECHNICAL HIGHLIGHTS
+## SLIDE 13: CRM & INVENTORY
+```
+CRM & INVENTORY INTEGRATION
+
+CRM Features:
+✓ Customer data sync
+✓ Vehicle history tracking
+✓ Booking status updates
+✓ Automated notifications
+✓ Customer lifetime value
+
+Inventory Management:
+✓ Real-time stock tracking
+✓ Product availability display
+✓ Low stock alerts
+✓ Service-product linking
+✓ Multi-branch inventory
+
+Integration Flow:
+1. Customer books service
+2. System checks inventory
+3. Updates stock levels
+4. Syncs with CRM
+5. Tracks service history
+```
+
+---
+
+## SLIDE 14: TECHNICAL HIGHLIGHTS
 ```
 TECHNICAL ACHIEVEMENTS
 
@@ -309,9 +337,9 @@ Frontend:
 
 Database:
 • Supabase PostgreSQL
-• Real-time data sync
-• Row Level Security
-• Optimized queries
+• CRM API integration
+• Inventory sync
+• Real-time updates
 
 Performance:
 • Fast page loads (<3 sec)
@@ -324,7 +352,7 @@ Security: Environment variables, secure auth, input validation
 
 ---
 
-## SLIDE 14: LIVE DEMO
+## SLIDE 15: LIVE DEMO
 ```
 LIVE DEMONSTRATION
 
@@ -353,7 +381,7 @@ Complete Customer Journey:
 
 ---
 
-## SLIDE 15: CONCLUSION
+## SLIDE 16: CONCLUSION
 ```
 CONCLUSION
 
@@ -376,7 +404,7 @@ Thank You! Questions?
 
 ---
 
-## 📸 SCREENSHOTS NEEDED (Customer-Facing Only):
+## 📸 SCREENSHOTS NEEDED (Customer-Facing + Integration):
 
 **Landing Page (8 screenshots):**
 1. Homepage with hero slider
@@ -397,13 +425,19 @@ Thank You! Questions?
 14. Step 6: Review & confirm
 15. Success page
 
-**Mobile Views (4 screenshots):**
-16. Homepage (mobile)
-17. Booking form (mobile)
-18. Time slots (mobile)
-19. Confirmation (mobile)
+**CRM & Inventory (4 screenshots):**
+16. Customer profile/history view
+17. Vehicle service history
+18. Product inventory display
+19. Stock level indicators
 
-**Total: 19 screenshots**
+**Mobile Views (4 screenshots):**
+20. Homepage (mobile)
+21. Booking form (mobile)
+22. Time slots (mobile)
+23. Confirmation (mobile)
+
+**Total: 23 screenshots** (including CRM/Inventory views)
 
 ---
 
@@ -417,10 +451,12 @@ Thank You! Questions?
 - Slide 11 (Mobile): 1 minute
 - Slide 12 (UX): 30 seconds
 - Slide 13 (Technical): 30 seconds
-- Slide 14 (Live Demo): 3 minutes
-- Slide 15 (Conclusion): 30 seconds
+- Slide 13 (CRM/Inventory): 1 minute
+- Slide 14 (Technical): 30 seconds
+- Slide 15 (Live Demo): 3 minutes
+- Slide 16 (Conclusion): 30 seconds
 
-**Total: ~12 minutes**
+**Total: ~13 minutes**
 
 ---
 

@@ -93,111 +93,44 @@ THE SOLUTION
 
 ---
 
-## SLIDE 5: FEATURE 1 - LANDING PAGE
+## SLIDE 5: KEY FEATURES
 ```
-FEATURE 1: MODERN LANDING PAGE
+KEY FEATURES
 
-Hero Section:
-✓ Eye-catching slider with promotions
-✓ Clear "Book Now" call-to-action
-✓ Contact information visible
+1. MODERN LANDING PAGE
+   • Hero slider with promotions
+   • Services showcase (6+ services)
+   • Branch locations with filters
+   • Testimonials & gallery
 
-Services Section:
-✓ 6+ automotive services
-✓ Service icons and descriptions
-✓ Price range estimates
-✓ Duration estimates
+2. SMART BOOKING SYSTEM
+   • 6-step guided process
+   • Real-time availability (green/yellow/red)
+   • Only 1 customer per time slot
+   • Auto reference: BK-YYYYMMDD-XXX
 
-Branch Locations:
-✓ All 6 branches with images
-✓ Region filtering (Manila vs Laoag)
-✓ Contact details and hours
+3. CRM & INVENTORY INTEGRATION
+   • Customer data synchronization
+   • Vehicle history tracking
+   • Real-time stock management
+   • Product availability display
 
-Social Proof:
-✓ Customer testimonials
-✓ Star ratings and reviews
-✓ Professional gallery
-```
+4. MOBILE-FIRST DESIGN
+   • Progressive Web App (PWA)
+   • Works on all devices
+   • Touch-friendly interface
+   • Fast loading
 
----
-
-## SLIDE 6: FEATURE 2 - BOOKING SYSTEM
-```
-FEATURE 2: SMART BOOKING SYSTEM
-
-6-Step Guided Process:
-1. Select Branch → 2. Vehicle Details
-3. Choose Services → 4. Date & Time
-5. Customer Info → 6. Review & Confirm
-
-Smart Features:
-✓ Real-time availability (green/yellow/red)
-✓ Only 1 customer per time slot
-✓ Past time prevention (PH timezone)
-✓ 6-month advance booking
-✓ Auto reference: BK-YYYYMMDD-XXX
-
-User Experience:
-• Progress indicator (Step 1/6)
-• Visual feedback at each step
-• Mobile-optimized forms
+Key Innovation:
+• AI-assisted development with Qwen
+• Database integration (Supabase + CRM)
+• Philippine timezone support
+• Double booking prevention
 ```
 
 ---
 
-## SLIDE 7: FEATURE 3 - AVAILABILITY
-```
-FEATURE 3: REAL-TIME SLOT MANAGEMENT
-
-Visual Availability System:
-🟢 GREEN = Available
-🟡 YELLOW = Limited
-🔴 RED = Full
-
-How It Works:
-1. Customer selects date
-2. System checks bookings
-3. Shows available slots
-4. Updates in real-time
-5. Prevents double booking
-
-Benefits:
-✓ No booking conflicts
-✓ Clear availability
-✓ Instant feedback
-✓ Timezone-aware
-```
-
----
-
-## SLIDE 8: FEATURE 4 - CRM & INVENTORY
-```
-FEATURE 4: CRM & INVENTORY INTEGRATION
-
-CRM Features:
-✓ Customer data synchronization
-✓ Vehicle history tracking
-✓ Booking status updates
-✓ Customer lifetime value
-✓ Service history records
-
-Inventory Management:
-✓ Real-time stock tracking
-✓ Product availability display
-✓ Low stock alerts
-✓ Multi-branch inventory
-✓ Service-product linking
-
-Integration Benefits:
-• Accurate stock information
-• Better customer service
-• Data-driven decisions
-• Streamlined operations
-```
-
----
-
-## SLIDE 9: LANDING PAGE SHOWCASE
+## SLIDE 6: BOOKING DEMO - PART 1
 ```
 LANDING PAGE FEATURES
 
@@ -227,7 +160,7 @@ Gallery & Reviews:
 
 ---
 
-## SLIDE 10: BOOKING DEMO - PART 1
+## SLIDE 7: BOOKING DEMO - PART 2
 ```
 BOOKING DEMO: Getting Started
 
@@ -254,7 +187,7 @@ Step 3: Choose Services
 
 ---
 
-## SLIDE 11: BOOKING DEMO - PART 2
+## SLIDE 8: MOBILE EXPERIENCE
 ```
 BOOKING DEMO: Complete Booking
 
@@ -281,7 +214,7 @@ Result:
 
 ---
 
-## SLIDE 12: MOBILE EXPERIENCE
+## SLIDE 9: USER EXPERIENCE
 ```
 MOBILE-FIRST DESIGN
 
@@ -306,7 +239,7 @@ Mobile Benefits:
 
 ---
 
-## SLIDE 13: USER EXPERIENCE
+## SLIDE 10: TECHNICAL HIGHLIGHTS
 ```
 USER EXPERIENCE HIGHLIGHTS
 
@@ -331,7 +264,7 @@ Feedback:
 
 ---
 
-## SLIDE 14: TECHNICAL HIGHLIGHTS
+## SLIDE 11: LIVE DEMO
 ```
 TECHNICAL ACHIEVEMENTS
 
@@ -358,7 +291,7 @@ Security: Environment variables, secure auth, input validation
 
 ---
 
-## SLIDE 15: LIVE DEMO
+## SLIDE 12: CONCLUSION
 ```
 LIVE DEMONSTRATION
 
@@ -387,7 +320,7 @@ Complete Customer Journey:
 
 ---
 
-## SLIDE 16: CONCLUSION
+**Total: 19 screenshots**
 ```
 CONCLUSION
 
@@ -412,7 +345,7 @@ Thank You! Questions?
 
 ## 📸 SCREENSHOTS NEEDED (Customer-Facing):
 
-**Landing Page & CRM/Inventory (12 screenshots):**
+**Landing Page (8 screenshots):**
 1. Homepage with hero slider
 2. Promotions section
 3. Services grid
@@ -421,27 +354,23 @@ Thank You! Questions?
 6. Testimonials section
 7. Gallery section
 8. Footer with contact
-9. Customer profile/history view
-10. Vehicle service history
-11. Product inventory display
-12. Stock level indicators
 
 **Booking Flow (7 screenshots):**
-13. Step 1: Branch selection
-14. Step 2: Vehicle details
-15. Step 3: Service selection
-16. Step 4: Date & time picker
-17. Step 5: Customer info
-18. Step 6: Review & confirm
-19. Success page
+9. Step 1: Branch selection
+10. Step 2: Vehicle details
+11. Step 3: Service selection
+12. Step 4: Date & time picker
+13. Step 5: Customer info
+14. Step 6: Review & confirm
+15. Success page
 
 **Mobile Views (4 screenshots):**
-20. Homepage (mobile)
-21. Booking form (mobile)
-22. Time slots (mobile)
-23. Confirmation (mobile)
+16. Homepage (mobile)
+17. Booking form (mobile)
+18. Time slots (mobile)
+19. Confirmation (mobile)
 
-**Total: 23 screenshots** (including CRM/Inventory views)
+**Total: 12 slides**
 
 ---
 
@@ -450,14 +379,13 @@ Thank You! Questions?
 - Slides 1-2 (Intro): 30 seconds
 - Slide 3 (Problem): 1 minute
 - Slide 4 (Solution): 1 minute
-- Slides 5-8 (Features): 2.5 minutes
-- Slide 9 (Landing Showcase): 30 seconds
-- Slides 10-11 (Demo): 2 minutes
-- Slide 12 (Mobile): 1 minute
-- Slide 13 (UX): 30 seconds
-- Slide 14 (Technical): 30 seconds
-- Slide 15 (Live Demo): 3 minutes
-- Slide 16 (Conclusion): 30 seconds
+- Slide 5 (Key Features): 2 minutes
+- Slides 6-7 (Demo): 3 minutes
+- Slide 8 (Mobile): 1 minute
+- Slide 9 (UX): 30 seconds
+- Slide 10 (Technical): 30 seconds
+- Slide 11 (Live Demo): 3 minutes
+- Slide 12 (Conclusion): 30 seconds
 
 **Total: ~13 minutes**
 

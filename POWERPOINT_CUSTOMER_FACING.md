@@ -257,7 +257,44 @@ Technical Achievement:
 
 ---
 
-## **SLIDE 8: LANDING PAGE SHOWCASE**
+## **SLIDE 8: FEATURE 4 - CRM & INVENTORY**
+
+### **Content:**
+```
+FEATURE 4: CRM & INVENTORY INTEGRATION
+
+CRM Features:
+✓ Customer data synchronization
+✓ Vehicle history tracking
+✓ Booking status updates
+✓ Customer lifetime value
+✓ Service history records
+
+Inventory Management:
+✓ Real-time stock tracking
+✓ Product availability display
+✓ Low stock alerts
+✓ Multi-branch inventory
+✓ Service-product linking
+
+Integration Benefits:
+• Accurate stock information
+• Better customer service
+• Data-driven decisions
+• Streamlined operations
+```
+
+### **Screenshot Needed:**
+- Show CRM & Inventory features:
+  - Customer profile/history view
+  - Vehicle service history
+  - Product inventory display
+  - Stock level indicators
+  - Service-product linking
+
+---
+
+## **SLIDE 9: LANDING PAGE SHOWCASE**
 
 ### **Content:**
 ```
@@ -298,7 +335,7 @@ Gallery:
 
 ---
 
-## **SLIDE 9: BOOKING FLOW DEMO - PART 1**
+## **SLIDE 10: BOOKING FLOW DEMO - PART 1**
 
 ### **Content:**
 ```
@@ -335,7 +372,7 @@ Customer Experience:
 
 ---
 
-## **SLIDE 10: BOOKING FLOW DEMO - PART 2**
+## **SLIDE 11: BOOKING FLOW DEMO - PART 2**
 
 ### **Content:**
 ```
@@ -373,7 +410,7 @@ Result:
 
 ---
 
-## **SLIDE 11: MOBILE EXPERIENCE**
+## **SLIDE 12: MOBILE EXPERIENCE**
 
 ### **Content:**
 ```
@@ -414,7 +451,7 @@ User Benefits:
 
 ---
 
-## **SLIDE 12: USER EXPERIENCE HIGHLIGHTS**
+## **SLIDE 13: USER EXPERIENCE HIGHLIGHTS**
 
 ### **Content:**
 ```
@@ -454,7 +491,7 @@ Accessibility:
 
 ---
 
-## **SLIDE 13: TECHNICAL ACHIEVEMENTS**
+## **SLIDE 14: TECHNICAL ACHIEVEMENTS**
 
 ### **Content:**
 ```
@@ -494,7 +531,7 @@ Security:
 
 ---
 
-## **SLIDE 14: LIVE DEMONSTRATION**
+## **SLIDE 15: LIVE DEMONSTRATION**
 
 ### **Content:**
 ```
@@ -534,7 +571,7 @@ Watch the full customer journey:
 
 ---
 
-## **SLIDE 15: CONCLUSION**
+## **SLIDE 16: CONCLUSION**
 
 ### **Content:**
 ```
@@ -647,10 +684,10 @@ Questions?
 
 ---
 
-**Total Slides:** 15  
-**Presentation Time:** 12 minutes  
+**Total Slides:** 16  
+**Presentation Time:** 13 minutes  
 **Demo Time:** 3 minutes  
-**Focus:** Customer-facing with CRM/Inventory database integration  
+**Focus:** Customer-facing with CRM/Inventory as key feature  
 **Excluded:** Admin dashboards (as requested)
 
 **Good luck with your presentation! 🚀✨**

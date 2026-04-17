@@ -170,7 +170,34 @@ Benefits:
 
 ---
 
-## SLIDE 8: LANDING PAGE SHOWCASE
+## SLIDE 8: FEATURE 4 - CRM & INVENTORY
+```
+FEATURE 4: CRM & INVENTORY INTEGRATION
+
+CRM Features:
+✓ Customer data synchronization
+✓ Vehicle history tracking
+✓ Booking status updates
+✓ Customer lifetime value
+✓ Service history records
+
+Inventory Management:
+✓ Real-time stock tracking
+✓ Product availability display
+✓ Low stock alerts
+✓ Multi-branch inventory
+✓ Service-product linking
+
+Integration Benefits:
+• Accurate stock information
+• Better customer service
+• Data-driven decisions
+• Streamlined operations
+```
+
+---
+
+## SLIDE 9: LANDING PAGE SHOWCASE
 ```
 LANDING PAGE FEATURES
 
@@ -200,7 +227,7 @@ Gallery & Reviews:
 
 ---
 
-## SLIDE 9: BOOKING DEMO - PART 1
+## SLIDE 10: BOOKING DEMO - PART 1
 ```
 BOOKING DEMO: Getting Started
 
@@ -227,7 +254,7 @@ Step 3: Choose Services
 
 ---
 
-## SLIDE 10: BOOKING DEMO - PART 2
+## SLIDE 11: BOOKING DEMO - PART 2
 ```
 BOOKING DEMO: Complete Booking
 
@@ -254,7 +281,7 @@ Result:
 
 ---
 
-## SLIDE 11: MOBILE EXPERIENCE
+## SLIDE 12: MOBILE EXPERIENCE
 ```
 MOBILE-FIRST DESIGN
 
@@ -279,7 +306,7 @@ Mobile Benefits:
 
 ---
 
-## SLIDE 12: USER EXPERIENCE
+## SLIDE 13: USER EXPERIENCE
 ```
 USER EXPERIENCE HIGHLIGHTS
 
@@ -304,7 +331,7 @@ Feedback:
 
 ---
 
-## SLIDE 13: TECHNICAL HIGHLIGHTS
+## SLIDE 14: TECHNICAL HIGHLIGHTS
 ```
 TECHNICAL ACHIEVEMENTS
 
@@ -331,7 +358,7 @@ Security: Environment variables, secure auth, input validation
 
 ---
 
-## SLIDE 14: LIVE DEMO
+## SLIDE 15: LIVE DEMO
 ```
 LIVE DEMONSTRATION
 
@@ -360,7 +387,7 @@ Complete Customer Journey:
 
 ---
 
-## SLIDE 15: CONCLUSION
+## SLIDE 16: CONCLUSION
 ```
 CONCLUSION
 
@@ -385,7 +412,7 @@ Thank You! Questions?
 
 ## 📸 SCREENSHOTS NEEDED (Customer-Facing):
 
-**Landing Page (8 screenshots):**
+**Landing Page & CRM/Inventory (12 screenshots):**
 1. Homepage with hero slider
 2. Promotions section
 3. Services grid
@@ -394,23 +421,27 @@ Thank You! Questions?
 6. Testimonials section
 7. Gallery section
 8. Footer with contact
+9. Customer profile/history view
+10. Vehicle service history
+11. Product inventory display
+12. Stock level indicators
 
 **Booking Flow (7 screenshots):**
-9. Step 1: Branch selection
-10. Step 2: Vehicle details
-11. Step 3: Service selection
-12. Step 4: Date & time picker
-13. Step 5: Customer info
-14. Step 6: Review & confirm
-15. Success page
+13. Step 1: Branch selection
+14. Step 2: Vehicle details
+15. Step 3: Service selection
+16. Step 4: Date & time picker
+17. Step 5: Customer info
+18. Step 6: Review & confirm
+19. Success page
 
 **Mobile Views (4 screenshots):**
-16. Homepage (mobile)
-17. Booking form (mobile)
-18. Time slots (mobile)
-19. Confirmation (mobile)
+20. Homepage (mobile)
+21. Booking form (mobile)
+22. Time slots (mobile)
+23. Confirmation (mobile)
 
-**Total: 19 screenshots**
+**Total: 23 screenshots** (including CRM/Inventory views)
 
 ---
 
@@ -419,15 +450,16 @@ Thank You! Questions?
 - Slides 1-2 (Intro): 30 seconds
 - Slide 3 (Problem): 1 minute
 - Slide 4 (Solution): 1 minute
-- Slides 5-8 (Features): 2 minutes
-- Slides 9-10 (Demo): 2 minutes
-- Slide 11 (Mobile): 1 minute
-- Slide 12 (UX): 30 seconds
-- Slide 13 (Technical): 30 seconds
-- Slide 14 (Live Demo): 3 minutes
-- Slide 15 (Conclusion): 30 seconds
+- Slides 5-8 (Features): 2.5 minutes
+- Slide 9 (Landing Showcase): 30 seconds
+- Slides 10-11 (Demo): 2 minutes
+- Slide 12 (Mobile): 1 minute
+- Slide 13 (UX): 30 seconds
+- Slide 14 (Technical): 30 seconds
+- Slide 15 (Live Demo): 3 minutes
+- Slide 16 (Conclusion): 30 seconds
 
-**Total: ~12 minutes**
+**Total: ~13 minutes**
 
 ---
 
